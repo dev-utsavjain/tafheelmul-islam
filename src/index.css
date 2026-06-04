@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Sora:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #ffffff;
+  --color-on-background: #0a301d;
+  --color-surface: #00180a;
+  --color-on-surface: #c3ecce;
+  --color-surface-variant: #173c27;
+  --color-on-surface-variant: #c1c8c3;
+  --color-surface-container: #002613;
+  --color-surface-container-low: #002110;
+  --color-surface-container-high: #0a301d;
+  --color-surface-container-highest: #173c27;
+  --color-surface-bright: #1c402b;
+  --color-surface-dim: #00180a;
+  --color-primary: #a8cfbd;
+  --color-on-primary: #12372a;
+  --color-primary-container: #12372a;
+  --color-on-primary-container: #7ba190;
+  --color-secondary: #bcff5f;
+  --color-on-secondary: #203600;
+  --color-secondary-container: #95e400;
+  --color-on-secondary-container: #3d6200;
+  --color-outline: #8b928d;
+  --color-outline-variant: #414844;
+  --color-tertiary-container: #2e3132;
+  --color-on-tertiary-container: #97999a;
+
+  --font-body: "Inter", sans-serif;
+  --font-display: "Sora", sans-serif;
+
+  --spacing-container-padding: 24px;
+  --spacing-section-gap: 80px;
+  --spacing-gutter: 24px;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-background antialiased font-body min-h-screen flex flex-col;
+  }
+}
+
+details > summary {
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
