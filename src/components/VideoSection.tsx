@@ -1,7 +1,7 @@
 export function VideoSection() {
   return (
     <section className="w-full">
-      <div className="w-full aspect-video rounded-[32px] overflow-hidden bg-surface-container-high border border-outline-variant/30">
+      <div className="w-full aspect-video rounded-[16px] md:rounded-[32px] overflow-hidden bg-surface-container-high border border-outline-variant/30">
         <iframe
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen

@@ -2,19 +2,19 @@ import { CheckCircle2, ArrowRight, ArrowUpRight } from "lucide-react";
 
 export function Mission() {
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
       {/* Left Card */}
-      <div className="bg-surface-container-low rounded-[32px] p-12 flex flex-col gap-8 relative border border-outline-variant/20">
-        <div className="inline-flex items-center px-4 py-2 rounded-full border border-outline-variant/30 w-max text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+      <div className="bg-surface-container-low rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-12 flex flex-col gap-6 md:gap-8 relative border border-outline-variant/20">
+        <div className="inline-flex items-center px-4 py-2 rounded-full border border-outline-variant/30 w-max text-on-surface-variant text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
           Who We Are
         </div>
-        <h2 className="font-display text-4xl font-semibold text-on-surface leading-tight">
+        <h2 className="font-display text-3xl sm:text-4xl font-semibold text-on-surface leading-tight">
           Driven by Compassion, Guided by Humanity
         </h2>
-        <p className="text-on-surface-variant text-lg leading-relaxed pt-2">
+        <p className="text-on-surface-variant text-base sm:text-lg leading-relaxed md:pt-2">
           We believe in the power of collective action to transform lives. Our dedicated volunteers work on the ground across Jammu & Kashmir to ensure that vulnerable families receive the resources, education, and medical care they need to thrive.
         </p>
-        <div className="mt-auto pt-8 grid grid-cols-2 gap-4">
+        <div className="mt-auto pt-4 md:pt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative h-48 rounded-2xl overflow-hidden bg-surface-container-high">
             <img
               alt="Children in classroom"
@@ -31,7 +31,7 @@ export function Mission() {
               </span>
             </div>
           </div>
-          <div className="relative h-48 rounded-2xl overflow-hidden bg-surface-container-high">
+          <div className="relative h-48 rounded-2xl overflow-hidden bg-surface-container-high hidden sm:block">
             <img
               alt="Humanitarian relief workers"
               className="w-full h-full object-cover"
@@ -42,12 +42,12 @@ export function Mission() {
       </div>
 
       {/* Right Card */}
-      <div className="bg-surface-bright rounded-[32px] p-12 flex flex-col justify-center gap-6 relative border border-outline-variant/20">
+      <div className="bg-surface-bright rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-12 flex flex-col justify-center gap-6 relative border border-outline-variant/20">
         <p className="font-display text-2xl font-semibold text-on-surface leading-relaxed">
           Supporting Our Cause Together. Support Our Mission and Make a
           Difference.
         </p>
-        <p className="text-lg text-on-surface-variant leading-relaxed">
+        <p className="text-base sm:text-lg text-on-surface-variant leading-relaxed">
           Tafheem-ul-Islam is a charity foundation based in Kashmir, dedicated
           to humanitarian aid, education, and social welfare and for safegaurding
           of Khatminabwat. The organization works to uplift underprivileged
@@ -56,7 +56,7 @@ export function Mission() {
           various initiatives, Tafheem-ul-Islam aims to promote social justice
           and improve the quality of life for those in need.
         </p>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-on-surface-variant">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 md:mt-4 text-on-surface-variant text-sm sm:text-base">
           <li className="flex items-center gap-2">
             <CheckCircle2 className="text-secondary w-5 h-5 flex-shrink-0" />{" "}
             Giving Hope, Changing Lives
@@ -82,13 +82,13 @@ export function Mission() {
             Compassion in Action
           </li>
         </ul>
-        <div className="flex items-center gap-6 mt-4">
-          <button className="bg-on-surface text-surface px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-secondary hover:text-on-secondary transition-colors">
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mt-4 md:mt-6">
+          <button className="bg-on-surface text-surface px-6 py-3.5 sm:py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-secondary hover:text-on-secondary transition-colors w-full sm:w-auto">
             Learn More
             <ArrowRight className="w-5 h-5" />
           </button>
           <a
-            className="text-on-surface font-bold hover:text-secondary transition-colors flex items-center gap-1"
+            className="text-on-surface font-bold hover:text-secondary transition-colors flex items-center justify-center gap-1 w-full sm:w-auto py-2 sm:py-0"
             href="#"
           >
             Our Team <ArrowUpRight className="w-4 h-4" />
