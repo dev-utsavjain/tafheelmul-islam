@@ -12,7 +12,7 @@ export function Navbar() {
           <img
             alt="Tafheem-ul-Islam"
             className="h-8 sm:h-10 object-contain rounded-lg"
-            src="https://lh3.googleusercontent.com/aida/AP1WRLtZjrV2pk1veVua7hijOHehVzE2in1wQNbr2igCBpjJOkLDLMfOPP4h9glvtvgefSrEHNNsZQQ3u9Jn0nUijWJDM4My5gmv0LXOVoyfbyRHyIY1BpAWSwhHcgTbx3cgcrjZtPzwhbS-b9-5Q1lu5HKG3ffsOmarZqhc34JcK3JrGVL83J-JMiMjp0hT_ChQHRS969O9EpRLedVGMKeq1_uu-7eUEqrqiTetTne7Slmm6ZNTc3mRnVDcHs5_"
+            src="https://res.cloudinary.com/dm3scoj2q/image/upload/v1780897979/T_logo_n_p9vebn.png"
           />
         </Link>
         <div className="hidden lg:flex gap-8 items-center">
