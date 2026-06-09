@@ -4,7 +4,7 @@ export function FAQ() {
   return (
     <section className="flex flex-col gap-6 md:gap-8 py-4 md:py-8 w-full z-10 relative">
       <div className="text-center">
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-gray-900 px-4">
+        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 px-4">
           Frequently Asked Questions
         </h2>
       </div>

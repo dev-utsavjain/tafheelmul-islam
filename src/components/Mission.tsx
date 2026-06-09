@@ -5,11 +5,11 @@ export function Mission() {
   return (
     <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
       {/* Left Card */}
-      <div className="bg-surface-container-low rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-12 flex flex-col gap-6 md:gap-8 relative border border-outline-variant/20">
+      <div className="bg-surface-container-low rounded-[20px] md:rounded-[32px] p-5 sm:p-8 md:p-12 flex flex-col gap-5 md:gap-8 relative border border-outline-variant/20">
         <div className="inline-flex items-center px-4 py-2 rounded-full border border-outline-variant/30 w-max text-on-surface-variant text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
           Who We Are
         </div>
-        <h2 className="font-display text-3xl sm:text-4xl font-semibold text-on-surface leading-tight">
+        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-on-surface leading-tight">
           30+ Years of Serving Humanity
         </h2>
         <p className="text-on-surface-variant text-base sm:text-lg leading-relaxed md:pt-2">
@@ -49,8 +49,8 @@ export function Mission() {
       </div>
 
       {/* Right Card */}
-      <div className="bg-surface-bright rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-12 flex flex-col justify-center gap-6 relative border border-outline-variant/20">
-        <h2 className="font-display text-3xl sm:text-4xl font-semibold text-on-surface leading-tight">
+      <div className="bg-surface-bright rounded-[20px] md:rounded-[32px] p-5 sm:p-8 md:p-12 flex flex-col justify-center gap-5 md:gap-6 relative border border-outline-variant/20">
+        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-on-surface leading-tight">
           Our Areas of Impact
         </h2>
         <p className="text-base sm:text-lg text-on-surface-variant leading-relaxed">

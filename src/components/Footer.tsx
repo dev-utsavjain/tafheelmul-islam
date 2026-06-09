@@ -1,4 +1,5 @@
 import { Landmark } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
@@ -36,33 +37,51 @@ export function Footer() {
         {/* Links */}
         <div className="flex flex-col gap-3 lg:gap-4">
           <h4 className="font-bold text-gray-900 mb-1 lg:mb-2">Legal</h4>
-          <a
+          <Link
             className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
-            href="#"
+            to="/privacy-policy"
           >
             Privacy Policy
-          </a>
-          <a
+          </Link>
+          <Link
             className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
-            href="#"
+            to="/terms"
           >
-            Terms of Service
-          </a>
+            Terms & Conditions
+          </Link>
         </div>
         <div className="flex flex-col gap-3 lg:gap-4">
-          <h4 className="font-bold text-gray-900 mb-1 lg:mb-2">Support</h4>
-          <a
+          <h4 className="font-bold text-gray-900 mb-1 lg:mb-2">Quick Links</h4>
+          <Link
             className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
-            href="#"
+            to="/"
           >
-            FAQ
-          </a>
-          <a
+            Home
+          </Link>
+          <Link
             className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
-            href="#"
+            to="/about-us"
+          >
+            About Us
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
+            to="/mission"
+          >
+            Our Mission
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
+            to="/gallery"
+          >
+            Gallery
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
+            to="/contact"
           >
             Contact Us
-          </a>
+          </Link>
         </div>
         
         {/* Bottom Row */}

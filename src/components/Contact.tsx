@@ -2,12 +2,12 @@ import { MapPin, Mail, Phone } from "lucide-react";
 
 export function Contact() {
   return (
-    <section className="bg-surface-container rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-12 border border-outline-variant/20 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+    <section id="contact" className="bg-surface-container rounded-[20px] md:rounded-[32px] p-5 sm:p-8 md:p-12 border border-outline-variant/20 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
       <div className="flex flex-col gap-4 md:gap-6">
         <div className="inline-flex items-center px-4 py-2 rounded-full border border-outline-variant/30 w-max text-on-surface-variant text-[10px] sm:text-xs font-semibold uppercase tracking-wider">
           Get In Touch
         </div>
-        <h2 className="font-display text-3xl md:text-4xl font-semibold text-on-surface">
+        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-on-surface">
           We'd love to hear from you
         </h2>
         <p className="text-on-surface-variant text-base md:text-lg leading-relaxed">

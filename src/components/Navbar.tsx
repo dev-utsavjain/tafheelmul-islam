@@ -16,29 +16,35 @@ export function Navbar() {
           />
         </Link>
         <div className="hidden lg:flex gap-8 items-center">
-          <a
+          <Link
             className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
-            href="#"
+            to="/"
+          >
+            Home
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
+            to="/about-us"
+          >
+            About Us
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
+            to="/mission"
           >
             Our Mission
-          </a>
-          <a
-            className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
-            href="#"
-          >
-            Work
-          </a>
-          <a
-            className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
-            href="#"
-          >
-            Impact
-          </a>
+          </Link>
           <Link
-            to="/donate"
             className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
+            to="/gallery"
           >
-            Bank Details
+            Gallery
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
+            to="/contact"
+          >
+            Contact Us
           </Link>
         </div>
         <div className="flex items-center gap-3 sm:gap-4">
@@ -59,33 +65,40 @@ export function Navbar() {
 
       {isOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-lg py-4 px-4 flex flex-col gap-2">
-           <a
+          <Link
             className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
-            href="#"
+            to="/"
+            onClick={() => setIsOpen(false)}
+          >
+            Home
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
+            to="/about-us"
+            onClick={() => setIsOpen(false)}
+          >
+            About Us
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
+            to="/mission"
             onClick={() => setIsOpen(false)}
           >
             Our Mission
-          </a>
-          <a
-            className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
-            href="#"
-            onClick={() => setIsOpen(false)}
-          >
-            Work
-          </a>
-          <a
-            className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
-            href="#"
-            onClick={() => setIsOpen(false)}
-          >
-            Impact
-          </a>
+          </Link>
           <Link
-            to="/donate"
-            className="text-[#12372a] font-bold transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
+            to="/gallery"
             onClick={() => setIsOpen(false)}
           >
-            Bank Details
+            Gallery
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
+            to="/contact"
+            onClick={() => setIsOpen(false)}
+          >
+            Contact Us
           </Link>
         </div>
       )}

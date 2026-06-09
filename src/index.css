@@ -47,3 +47,25 @@ details > summary {
 details > summary::-webkit-details-marker {
   display: none;
 }
+
+.markdown-body h1 {
+  @apply text-3xl md:text-4xl font-display font-bold text-gray-900 mb-6;
+}
+.markdown-body h2 {
+  @apply text-2xl md:text-3xl font-display font-bold text-gray-900 mt-10 mb-4;
+}
+.markdown-body h3 {
+  @apply text-xl md:text-2xl font-display font-bold text-gray-900 mt-8 mb-3;
+}
+.markdown-body p {
+  @apply text-base md:text-lg text-gray-600 leading-relaxed mb-4;
+}
+.markdown-body ul {
+  @apply list-disc list-inside text-base md:text-lg text-gray-600 leading-relaxed mb-4 flex flex-col gap-2;
+}
+.markdown-body li {
+  @apply ml-2 md:ml-4;
+}
+.markdown-body hr {
+  @apply my-8 border-gray-200;
+}

@@ -4,9 +4,9 @@ import { motion } from "motion/react";
 
 export function Hero() {
   return (
-    <section className="bg-primary-container rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-16 flex flex-col gap-8 md:gap-12 relative overflow-hidden">
+    <section className="bg-primary-container rounded-[20px] md:rounded-[32px] p-5 sm:p-8 md:p-16 flex flex-col gap-6 md:gap-12 relative overflow-hidden">
       <div className="flex flex-col gap-4 md:gap-6 relative z-10 max-w-3xl mb-0 md:mb-4 w-full">
-        <h1 className="font-display text-4xl sm:text-5xl md:text-[64px] text-white text-left font-semibold leading-[1.1] tracking-tight">
+        <h1 className="font-display text-[2rem] leading-tight sm:text-5xl md:text-[64px] text-white text-left font-semibold tracking-tight">
           Changing Lives, One Act <br className="hidden md:block" /> of Kindness at a Time
         </h1>
         <p className="text-base sm:text-lg md:text-xl text-on-primary-container leading-relaxed max-w-2xl">
