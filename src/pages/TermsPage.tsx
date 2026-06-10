@@ -1,4 +1,5 @@
 import Markdown from "react-markdown";
+import { Helmet } from "react-helmet-async";
 
 const termsMarkdown = `
 # Terms & Conditions
@@ -204,12 +205,18 @@ We appreciate your trust and support in helping us serve humanity with compassio
 
 export function TermsPage() {
   return (
-    <main className="flex-grow flex flex-col px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
-      <div className="max-w-4xl w-full mx-auto bg-white border border-gray-200 rounded-[20px] md:rounded-[32px] p-6 md:p-16 shadow-sm">
-        <div className="markdown-body">
-          <Markdown>{termsMarkdown}</Markdown>
+    <>
+      <Helmet>
+        <title>Terms & Conditions | Tafheem-ul-Islam Trust</title>
+        <meta name="description" content="Terms & Conditions for Tafheem-ul-Islam Trust website usage." />
+      </Helmet>
+      <main className="flex-grow flex flex-col px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
+        <div className="max-w-4xl w-full mx-auto bg-white border border-gray-200 rounded-[20px] md:rounded-[32px] p-6 md:p-16 shadow-sm">
+          <div className="markdown-body">
+            <Markdown>{termsMarkdown}</Markdown>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

@@ -1,8 +1,14 @@
 import { MapPin, Mail, Phone, MessageCircle } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 export function ContactPage() {
   return (
-    <main className="flex-grow flex flex-col gap-8 md:gap-20 px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
+    <>
+      <Helmet>
+        <title>Contact Us | Tafheem-ul-Islam Trust</title>
+        <meta name="description" content="Get in touch with Tafheem-ul-Islam Trust." />
+      </Helmet>
+      <main className="flex-grow flex flex-col gap-8 md:gap-20 px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
       {/* Header Section */}
       <section className="bg-[#0a301d] rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-16 flex flex-col items-center justify-center gap-6 md:gap-8 text-center relative overflow-hidden">
         <h1 className="font-display text-4xl sm:text-5xl md:text-[64px] text-white font-bold leading-[1.1] tracking-tight relative z-10 w-full max-w-3xl mx-auto">
@@ -121,5 +127,6 @@ export function ContactPage() {
         </form>
       </section>
     </main>
+    </>
   );
 }

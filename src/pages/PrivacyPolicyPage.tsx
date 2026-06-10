@@ -1,4 +1,5 @@
 import Markdown from "react-markdown";
+import { Helmet } from "react-helmet-async";
 
 const privacyPolicyMarkdown = `
 # Privacy Policy
@@ -166,12 +167,18 @@ We will make reasonable efforts to respond to privacy-related inquiries promptly
 
 export function PrivacyPolicyPage() {
   return (
-    <main className="flex-grow flex flex-col px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
-      <div className="max-w-4xl w-full mx-auto bg-white border border-gray-200 rounded-[20px] md:rounded-[32px] p-6 md:p-16 shadow-sm">
-        <div className="markdown-body">
-          <Markdown>{privacyPolicyMarkdown}</Markdown>
+    <>
+      <Helmet>
+        <title>Privacy Policy | Tafheem-ul-Islam Trust</title>
+        <meta name="description" content="Privacy Policy for Tafheem-ul-Islam Trust." />
+      </Helmet>
+      <main className="flex-grow flex flex-col px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
+        <div className="max-w-4xl w-full mx-auto bg-white border border-gray-200 rounded-[20px] md:rounded-[32px] p-6 md:p-16 shadow-sm">
+          <div className="markdown-body">
+            <Markdown>{privacyPolicyMarkdown}</Markdown>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

@@ -1,9 +1,15 @@
 import { Heart, Globe, Target, Flame, Users, BookOpen, BriefcaseMedical, Baby, ShieldCheck, Home, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 export function MissionPage() {
   return (
-    <main className="flex-grow flex flex-col gap-8 md:gap-20 px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
+    <>
+      <Helmet>
+        <title>Our Mission | Tafheem-ul-Islam Trust</title>
+        <meta name="description" content="Tafheem-ul-Islam Trust's mission is to uplift vulnerable individuals through education, healthcare, and humanitarian assistance." />
+      </Helmet>
+      <main className="flex-grow flex flex-col gap-8 md:gap-20 px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
       {/* Hero Section */}
       <section className="bg-[#0a301d] rounded-[24px] md:rounded-[32px] p-6 sm:p-8 md:p-16 flex flex-col gap-8 md:gap-12 relative overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center relative z-10">
@@ -200,5 +206,6 @@ export function MissionPage() {
       </section>
 
     </main>
+    </>
   );
 }
