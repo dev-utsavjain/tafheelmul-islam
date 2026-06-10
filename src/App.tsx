@@ -16,6 +16,8 @@ import { ContactPage } from "./pages/ContactPage";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { GalleryPage } from "./pages/GalleryPage";
+import { AdminGalleryPage } from "./pages/AdminGalleryPage";
+
 
 export default function App() {
   return (
@@ -31,6 +33,7 @@ export default function App() {
         <Route path="/donate" element={<Donate />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/admin/gallery" element={<AdminGalleryPage />} />
       </Routes>
       <Footer />
     </HelmetProvider>
