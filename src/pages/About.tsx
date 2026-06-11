@@ -7,7 +7,7 @@ export function About() {
     <>
       <Helmet>
         <title>About Us | Tafheem-ul-Islam Trust</title>
-        <meta name="description" content="Learn about Tafheem-ul-Islam Trust's journey, mission, and vision to serve humanity with compassion since 1994." />
+        <meta name="description" content="Learn about Tafheem-ul-Islam Trust's journey, mission, and vision to serve humanity with compassion since 2015." />
       </Helmet>
       <main className="flex-grow flex flex-col gap-8 md:gap-20 px-4 sm:px-6 lg:px-20 w-full mx-auto pt-4 md:pt-12 pb-12 md:pb-24">
       {/* Hero Section */}
@@ -18,10 +18,10 @@ export function About() {
               About Tafheemul Islam Trust
             </div>
             <h1 className="font-display text-4xl sm:text-5xl md:text-[64px] text-white text-left font-bold leading-[1.1] tracking-tight">
-              Serving Humanity with <br className="hidden md:block" /> Compassion Since 1994
+              Serving Humanity with <br className="hidden md:block" /> Compassion Since 2015
             </h1>
             <p className="text-gray-300 text-base md:text-lg leading-relaxed max-w-md">
-              For more than three decades, Tafheemul Islam Trust has been dedicated to serving humanity with compassion, dignity, and unwavering commitment. Established in Jammu & Kashmir, the Trust was founded on a simple belief: every person deserves support, opportunity, and hope, regardless of religion, caste, background, or geography.
+              For more than a decade, Tafheemul Islam Trust has been dedicated to serving humanity with compassion, dignity, and unwavering commitment. Established in Anantnag district, Jammu and Kashmir, India, the Trust was founded on a simple belief: every person deserves support, opportunity, and hope, regardless of religion, caste, background, or geography.
             </p>
             <p className="text-gray-300 text-base md:text-lg leading-relaxed max-w-md font-light">
               What began as a small community-driven effort has grown into a humanitarian mission that has touched countless lives. Throughout challenging times, our focus has remained unchanged—standing beside those who need help the most.
@@ -56,7 +56,7 @@ export function About() {
             Our Journey
           </h2>
           <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-            For over 30 years, we have worked among communities facing hardship, poverty, illness, displacement, and social challenges. During times of uncertainty, we chose compassion over division, service over recognition, and action over words.
+            For over 10 years, we have worked among communities facing hardship, poverty, illness, displacement, and social challenges. During times of uncertainty, we chose compassion over division, service over recognition, and action over words.
           </p>
           <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
             Our journey has been guided by the belief that meaningful change begins when communities come together to support one another. Every child educated, every family assisted, every patient supported, and every life impacted represents a step toward a more caring and equitable society.
@@ -208,7 +208,7 @@ export function About() {
           <ul className="flex flex-col gap-4 text-gray-600 text-base sm:text-lg">
             <li className="flex items-start gap-3">
               <CheckCircle2 className="w-6 h-6 text-[#12372a] shrink-0 mt-0.5" />
-              <span>30+ years of humanitarian service</span>
+              <span>10+ years of humanitarian service</span>
             </li>
             <li className="flex items-start gap-3">
               <CheckCircle2 className="w-6 h-6 text-[#12372a] shrink-0 mt-0.5" />

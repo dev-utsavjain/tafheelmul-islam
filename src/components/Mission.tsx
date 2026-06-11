@@ -10,10 +10,10 @@ export function Mission() {
           Who We Are
         </div>
         <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-on-surface leading-tight">
-          30+ Years of Serving Humanity
+          10+ Years of Serving Humanity
         </h2>
         <p className="text-on-surface-variant text-base sm:text-lg leading-relaxed md:pt-2">
-          Since 1994, we have worked to support children, families, widows, patients, and disaster-affected communities with compassion, dignity, and hope—irrespective of religion or region.
+          Since 2015, we have worked to support children, families, widows, patients, and disaster-affected communities with compassion, dignity, and hope—irrespective of religion or region.
         </p>
         <div className="pt-2">
           <Link to="/about-us" className="bg-on-surface text-surface px-6 py-3 rounded-full font-bold inline-flex items-center gap-2 hover:bg-secondary hover:text-on-secondary transition-colors w-max">

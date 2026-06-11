@@ -33,7 +33,7 @@ export default function App() {
         <Route path="/donate" element={<Donate />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
-        <Route path="/admin/gallery" element={<AdminGalleryPage />} />
+        <Route path="/admin" element={<AdminGalleryPage />} />
       </Routes>
       <Footer />
     </HelmetProvider>

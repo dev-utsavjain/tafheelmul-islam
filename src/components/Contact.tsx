@@ -1,6 +1,53 @@
-import { MapPin, Mail, Phone } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Mail, Phone, Loader2, CheckCircle2 } from "lucide-react";
+import { supabase, GALLERY_SCHEMA, CONTACT_TABLE } from "../lib/supabase";
 
 export function Contact() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const { error: dbError } = await supabase
+        .schema(GALLERY_SCHEMA)
+        .from(CONTACT_TABLE)
+        .insert({ name, email, subject, message });
+
+      if (dbError) throw dbError;
+
+      const emailRes = await fetch(`${import.meta.env.VITE_GO_BACKEND_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+
+      if (!emailRes.ok) {
+        const data = await emailRes.json().catch(() => null);
+        throw new Error(data?.error || "Failed to send email notification.");
+      }
+
+      setSuccess(true);
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section id="contact" className="bg-surface-container rounded-[20px] md:rounded-[32px] p-5 sm:p-8 md:p-12 border border-outline-variant/20 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
       <div className="flex flex-col gap-4 md:gap-6">
@@ -20,7 +67,7 @@ export function Contact() {
             <span className="bg-surface-container-high p-2 md:p-3 rounded-full text-secondary">
               <MapPin className="w-5 h-5 md:w-6 md:h-6" />
             </span>
-            <span className="text-sm md:text-base">Srinagar, Jammu & Kashmir, India</span>
+            <span className="text-sm md:text-base">Anantnag district, Jammu and Kashmir, India</span>
           </div>
           <div className="flex items-center gap-3 md:gap-4 text-on-surface">
             <span className="bg-surface-container-high p-2 md:p-3 rounded-full text-secondary">
@@ -36,7 +83,7 @@ export function Contact() {
           </div>
         </div>
       </div>
-      <form className="flex flex-col gap-3 md:gap-4 bg-surface-container-low p-5 md:p-6 rounded-xl md:rounded-2xl border border-outline-variant/30">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:gap-4 bg-surface-container-low p-5 md:p-6 rounded-xl md:rounded-2xl border border-outline-variant/30">
         <div className="flex flex-col gap-1.5 md:gap-2">
           <label className="text-xs md:text-sm font-bold text-on-surface" htmlFor="name">
             Name
@@ -46,6 +93,9 @@ export function Contact() {
             id="name"
             placeholder="John Doe"
             type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-1.5 md:gap-2">
@@ -57,6 +107,9 @@ export function Contact() {
             id="email"
             placeholder="john@example.com"
             type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-1.5 md:gap-2">
@@ -68,6 +121,9 @@ export function Contact() {
             id="subject"
             placeholder="How can I help?"
             type="text"
+            required
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-1.5 md:gap-2">
@@ -78,13 +134,30 @@ export function Contact() {
             className="bg-surface border border-outline-variant rounded-lg md:rounded-xl px-3 py-2.5 md:px-4 md:py-3 text-sm md:text-base text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all resize-none h-24 md:h-32"
             id="message"
             placeholder="Your message here..."
+            required
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
           ></textarea>
         </div>
+        {error && (
+          <p className="text-xs text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+        )}
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-2 text-green-800 text-xs md:text-sm font-medium">
+            <CheckCircle2 size={16} className="text-green-600 shrink-0" />
+            <span>Message sent successfully!</span>
+          </div>
+        )}
         <button
-          className="bg-secondary text-on-secondary px-4 py-3 md:px-6 md:py-3 rounded-lg md:rounded-xl font-bold hover:opacity-90 transition-opacity mt-1 md:mt-2 text-sm md:text-base"
-          type="button"
+          className="bg-secondary text-on-secondary px-4 py-3 md:px-6 md:py-3 rounded-lg md:rounded-xl font-bold hover:opacity-90 transition-opacity mt-1 md:mt-2 text-sm md:text-base flex items-center justify-center gap-2 disabled:opacity-50"
+          type="submit"
+          disabled={loading}
         >
-          Send Message
+          {loading ? (
+            <><Loader2 size={16} className="animate-spin" /> Sending...</>
+          ) : (
+            "Send Message"
+          )}
         </button>
       </form>
     </section>

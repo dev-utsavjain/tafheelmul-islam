@@ -1,7 +1,54 @@
-import { MapPin, Mail, Phone, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Mail, Phone, Loader2, CheckCircle2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { supabase, GALLERY_SCHEMA, CONTACT_TABLE } from "../lib/supabase";
 
 export function ContactPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const { error: dbError } = await supabase
+        .schema(GALLERY_SCHEMA)
+        .from(CONTACT_TABLE)
+        .insert({ name, email, subject, message });
+
+      if (dbError) throw dbError;
+
+      const emailRes = await fetch(`${import.meta.env.VITE_GO_BACKEND_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+
+      if (!emailRes.ok) {
+        const data = await emailRes.json().catch(() => null);
+        throw new Error(data?.error || "Failed to send email notification.");
+      }
+
+      setSuccess(true);
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -24,7 +71,7 @@ export function ContactPage() {
         {/* Contact Info */}
         <div className="flex flex-col gap-6 md:gap-8 h-full justify-center">
           <div>
-             <div className="inline-flex items-center px-4 py-1.5 md:py-2 rounded-full border border-green-500/30 w-max text-[#12372a] bg-white border border-gray-200 shadow-sm text-xs md:text-sm font-semibold mb-4 lg:mb-6">
+             <div className="inline-flex items-center px-4 py-1.5 md:py-2 rounded-full w-max text-[#12372a] bg-white border border-gray-200 shadow-sm text-xs md:text-sm font-semibold mb-4 lg:mb-6">
                 Get In Touch
              </div>
              <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
@@ -42,7 +89,7 @@ export function ContactPage() {
               </span>
               <div className="flex flex-col gap-1 mt-1">
                  <span className="font-bold text-base md:text-lg">Our Location</span>
-                 <span className="text-sm md:text-base text-gray-600">Srinagar, Jammu & Kashmir, India</span>
+                 <span className="text-sm md:text-base text-gray-600">Anantnag district, Jammu and Kashmir, India</span>
               </div>
             </div>
             
@@ -53,7 +100,7 @@ export function ContactPage() {
                <div className="flex flex-col gap-1 mt-1">
                  <span className="font-bold text-base md:text-lg">Email Us</span>
                  <span className="text-sm md:text-base text-gray-600 break-all">tafeemulislam524@gmail.com</span>
-              </div>
+               </div>
             </a>
             
             <a href="https://wa.me/919906822744" target="_blank" rel="noopener noreferrer" className="flex items-start gap-4 md:gap-5 text-gray-900 group">
@@ -69,7 +116,7 @@ export function ContactPage() {
         </div>
 
         {/* Contact Form */}
-        <form className="flex flex-col gap-4 md:gap-5 bg-white p-6 sm:p-8 md:p-10 rounded-[24px] md:rounded-[32px] border border-gray-200 shadow-sm h-full">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5 bg-white p-6 sm:p-8 md:p-10 rounded-[24px] md:rounded-[32px] border border-gray-200 shadow-sm h-full">
           <div className="mb-2 md:mb-4">
              <h3 className="font-display text-2xl md:text-3xl font-bold text-gray-900">Send a Message</h3>
              <p className="text-gray-500 text-sm md:text-base mt-2">Fill out the form below and we will contact you shortly.</p>
@@ -84,6 +131,9 @@ export function ContactPage() {
               id="name"
               placeholder="John Doe"
               type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -95,6 +145,9 @@ export function ContactPage() {
               id="email"
               placeholder="john@example.com"
               type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -106,6 +159,9 @@ export function ContactPage() {
               id="subject"
               placeholder="How can we help you?"
               type="text"
+              required
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-2 flex-grow">
@@ -116,13 +172,30 @@ export function ContactPage() {
               className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-900 focus:outline-none focus:border-[#12372a] focus:ring-1 focus:ring-[#12372a] transition-all resize-none min-h-[120px] flex-grow placeholder:text-gray-400"
               id="message"
               placeholder="Write your message here..."
+              required
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             ></textarea>
           </div>
+          {error && (
+            <p className="text-xs text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+          )}
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center gap-2 text-green-800 text-sm font-medium">
+              <CheckCircle2 size={16} className="text-green-600 shrink-0" />
+              <span>Message sent successfully!</span>
+            </div>
+          )}
           <button
-            className="bg-[#12372a] text-white px-6 py-4 rounded-xl font-bold hover:bg-[#1a4f3c] transition-colors mt-2 text-base shadow-sm w-full"
-            type="button"
+            className="bg-[#12372a] text-white px-6 py-4 rounded-xl font-bold hover:bg-[#1a4f3c] transition-colors mt-2 text-base shadow-sm w-full flex items-center justify-center gap-2 disabled:opacity-50"
+            type="submit"
+            disabled={loading}
           >
-            Send Message
+            {loading ? (
+              <><Loader2 size={16} className="animate-spin" /> Sending...</>
+            ) : (
+              "Send Message"
+            )}
           </button>
         </form>
       </section>

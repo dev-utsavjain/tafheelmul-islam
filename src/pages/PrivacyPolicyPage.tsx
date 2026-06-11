@@ -16,7 +16,7 @@ By using this website, you agree to the practices described in this Privacy Poli
 
 ## About Tafheem-ul-Islam Trust
 
-Tafheem-ul-Islam Trust is a humanitarian organization based in Jammu & Kashmir, India, serving humanity irrespective of religion or region. For over 30 years, the Trust has worked to support orphans, widows, chronically ill patients, disaster-affected families, and vulnerable communities through charitable and welfare initiatives.
+Tafheem-ul-Islam Trust is a humanitarian organization based in Anantnag district, Jammu and Kashmir, India, serving humanity irrespective of religion or region. For over 10 years, the Trust has worked to support orphans, widows, chronically ill patients, disaster-affected families, and vulnerable communities through charitable and welfare initiatives.
 
 ## Information We Collect
 
@@ -157,7 +157,7 @@ Any changes will be published on this page with an updated revision date. Contin
 If you have any questions regarding this Privacy Policy or how your information is handled, please contact us:
 
 Tafheem-ul-Islam Trust
-Jammu & Kashmir, India
+Anantnag district, Jammu and Kashmir, India
 
 Email: tafeemulislam524@gmail.com
 Phone: +91 99068 22744

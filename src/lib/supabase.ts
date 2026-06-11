@@ -12,6 +12,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const GALLERY_SCHEMA = "tafheemul";
 export const GALLERY_TABLE = "gallery_items";
 export const GALLERY_BUCKET = "gallery-images";
+export const DONATIONS_TABLE = "donations";
+export const CONTACT_TABLE = "contact_messages";
+export const OFFLINE_TABLE = "offline_donations";
 
 export type GalleryItem = {
     id: string;
@@ -19,6 +22,34 @@ export type GalleryItem = {
     caption: string;
     category: string;
     sort_order: number;
+    created_at: string;
+};
+
+export type Donation = {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    created_at: string;
+};
+
+export type ContactMessage = {
+    id: string;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    created_at: string;
+};
+
+export type OfflineDonation = {
+    id: string;
+    name: string;
+    phone: string;
+    amount: number;
+    purpose: string;
+    donation_date: string;
+    address: string;
     created_at: string;
 };
 
