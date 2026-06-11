@@ -15,6 +15,20 @@ import (
 	"time"
 )
 
+// spaFileSystem wraps http.Dir and falls back to index.html for missing files,
+// enabling client-side routing (React Router) on the same server.
+type spaFileSystem struct {
+	root http.FileSystem
+}
+
+func (s spaFileSystem) Open(name string) (http.File, error) {
+	f, err := s.root.Open(name)
+	if err != nil {
+		return s.root.Open("/index.html")
+	}
+	return f, nil
+}
+
 type DonateRequest struct {
 	Name  string `json:"name"`
 	Phone string `json:"phone"`
@@ -74,6 +88,7 @@ func main() {
 	http.HandleFunc("/api/health", healthHandler)
 	http.HandleFunc("/api/donate", withCORS(donateHandler))
 	http.HandleFunc("/api/contact", withCORS(contactHandler))
+	http.Handle("/", http.FileServer(spaFileSystem{http.Dir("./dist")}))
 
 	log.Printf("Go mail server running on :%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
@@ -268,43 +283,102 @@ const donorTemplate = `
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <style>
-    body { margin:0; padding:0; background:#f4f7f4; font-family:Arial,sans-serif; color:#1f2937; }
-    .wrapper { max-width:620px; margin:0 auto; background:#ffffff; }
-    .hero { background:#0a301d; padding:36px 28px; text-align:center; }
-    .badge { display:inline-block; padding:8px 14px; border-radius:999px; background:rgba(188,255,95,0.12); color:#bcff5f; font-size:12px; font-weight:700; letter-spacing:.04em; }
-    .hero h1 { color:#ffffff; font-size:28px; line-height:1.2; margin:18px 0 10px; }
-    .hero p { color:#d1d5db; font-size:15px; line-height:1.6; margin:0; }
-    .content { padding:32px 28px; }
-    .content p { font-size:15px; line-height:1.8; margin:0 0 16px; color:#374151; }
-    .note { background:#f0faf2; border:1px solid #ccebd4; padding:18px; border-radius:14px; color:#14532d; margin:18px 0 22px; }
-    .footer { padding:24px 28px 34px; border-top:1px solid #e5e7eb; background:#fafafa; }
-    .footer p { margin:0; font-size:13px; line-height:1.7; color:#6b7280; text-align:center; }
-    .sign { color:#0a301d; font-weight:700; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thank You</title>
 </head>
-<body>
-  <div class="wrapper">
-    <div class="hero">
-      <img src="https://res.cloudinary.com/dm3scoj2q/image/upload/v1780897979/T_logo_n_p9vebn.png" alt="Tafheem-ul-Islam Trust Logo" style="width: 80px; height: auto; border-radius: 8px; margin-bottom: 16px; display: inline-block;" />
-      <div class="badge">Tafheem-ul-Islam Trust</div>
-      <h1>Thank You for Your Support</h1>
-      <p>Your generosity strengthens our work for vulnerable families, children, widows, and people in need.</p>
-    </div>
-    <div class="content">
-      <p>Dear {{.Name}},</p>
-      <p>Thank you for sharing your donation details with Tafheem-ul-Islam Trust. We deeply value your support and the trust you have placed in our work.</p>
-      <div class="note">
-        Your contribution will be used with care, responsibility, and sincerity to support people facing hardship and urgent need.
-      </div>
-      <p>Your kindness brings comfort, dignity, and hope to those who need it most.</p>
-      <p class="sign">With gratitude,<br />Tafheem-ul-Islam Trust</p>
-    </div>
-    <div class="footer">
-      <p>This is an automated message from Tafheem-ul-Islam Trust.</p>
-    </div>
-  </div>
+
+<body style="margin:0;padding:0;background-color:#f4f7f4;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#f4f7f4">
+  <tr>
+    <td align="center" style="padding:20px 10px;">
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="620" style="max-width:620px;background:#ffffff;">
+
+        <!-- HERO -->
+        <tr>
+          <td align="center" bgcolor="#0a301d" style="padding:36px 28px;">
+
+            <!-- LOGO -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td bgcolor="#ffffff" style="padding:12px 20px;border-radius:12px;">
+                  <img
+                    src="https://res.cloudinary.com/dm3scoj2q/image/upload/v1780897979/T_logo_n_p9vebn.png"
+                    alt="Tafheem-ul-Islam Trust"
+                    width="180"
+                    style="display:block;border:0;outline:none;text-decoration:none;height:auto;max-width:180px;">
+                </td>
+              </tr>
+            </table>
+
+            <div style="height:18px;line-height:18px;font-size:18px;">&nbsp;</div>
+
+            <!-- BADGE -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td bgcolor="#bcff5f" style="padding:8px 16px;border-radius:20px;color:#0a301d;font-size:12px;font-weight:bold;letter-spacing:0.5px;">
+                  TAFHEEM-UL-ISLAM TRUST
+                </td>
+              </tr>
+            </table>
+
+            <h1 style="margin:22px 0 10px;font-size:28px;line-height:34px;color:#ffffff;font-weight:bold;">
+              Thank You for Your Support
+            </h1>
+            <p style="margin:0;color:#d1d5db;font-size:15px;line-height:24px;">
+              Your generosity strengthens our work for vulnerable families, children, widows, and people in need.
+            </p>
+
+          </td>
+        </tr>
+
+        <!-- CONTENT -->
+        <tr>
+          <td style="padding:32px 28px;">
+
+            <p style="margin:0 0 16px;font-size:15px;line-height:28px;color:#374151;">Dear {{.Name}},</p>
+            <p style="margin:0 0 16px;font-size:15px;line-height:28px;color:#374151;">
+              Thank you for sharing your donation details with Tafheem-ul-Islam Trust. We deeply value your support and the trust you have placed in our work.
+            </p>
+
+            <!-- NOTE BOX -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td bgcolor="#f0faf2" style="border:1px solid #ccebd4;border-radius:12px;padding:18px;color:#14532d;font-size:15px;line-height:24px;">
+                  Your contribution will be used with care, responsibility, and sincerity to support people facing hardship and urgent need.
+                </td>
+              </tr>
+            </table>
+
+            <div style="height:22px;line-height:22px;font-size:22px;">&nbsp;</div>
+
+            <p style="margin:0 0 16px;font-size:15px;line-height:28px;color:#374151;">
+              Your kindness brings comfort, dignity, and hope to those who need it most.
+            </p>
+            <p style="margin:0;font-size:15px;line-height:28px;color:#0a301d;font-weight:bold;">
+              With gratitude,<br>Tafheem-ul-Islam Trust
+            </p>
+
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td bgcolor="#fafafa" style="padding:24px 28px 34px;border-top:1px solid #e5e7eb;">
+            <p style="margin:0;text-align:center;font-size:13px;line-height:22px;color:#6b7280;">
+              This is an automated message from Tafheem-ul-Islam Trust.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
 </body>
 </html>
 `

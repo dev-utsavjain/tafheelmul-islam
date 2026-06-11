@@ -540,10 +540,15 @@ function OfflineDonationsTab() {
           }
 
           .logo {
-            width: 56px;
-            height: 56px;
+            height: 54px;
+            width: auto;
+            max-width: 160px;
             object-fit: contain;
-            border-radius: 8px;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 8px 14px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+            display: block;
           }
 
           .org-name {
