@@ -42,6 +42,12 @@ export function Navbar() {
           </Link>
           <Link
             className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
+            to="/partners"
+          >
+            Partners
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all"
             to="/contact"
           >
             Contact Us
@@ -92,6 +98,13 @@ export function Navbar() {
             onClick={() => setIsOpen(false)}
           >
             Gallery
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"
+            to="/partners"
+            onClick={() => setIsOpen(false)}
+          >
+            Partners
           </Link>
           <Link
             className="text-gray-600 hover:text-[#12372a] font-medium transition-all py-2 px-2 hover:bg-gray-50 rounded-lg"

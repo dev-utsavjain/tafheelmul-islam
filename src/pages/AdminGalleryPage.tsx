@@ -15,6 +15,9 @@ import {
   PlusCircle,
   Calendar,
   Wallet,
+  Share2,
+  Video,
+  Users2,
 } from "lucide-react";
 import {
   supabase,
@@ -22,13 +25,19 @@ import {
   type Donation,
   type ContactMessage,
   type OfflineDonation,
+  type Partner,
   GALLERY_BUCKET,
+  GALLERY_VIDEO_BUCKET,
   GALLERY_SCHEMA,
   GALLERY_TABLE,
   DONATIONS_TABLE,
   CONTACT_TABLE,
   OFFLINE_TABLE,
+  PARTNERS_TABLE,
+  PARTNERS_BUCKET,
   getGalleryImageUrl,
+  getGalleryVideoUrl,
+  getPartnerPhotoUrl,
 } from "../lib/supabase";
 
 const CATEGORIES = [
@@ -62,7 +71,7 @@ function Toast({
       initial={{ opacity: 0, y: 24, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10 }}
-      className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-medium ${
+      className={`fixed bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-medium ${
         type === "success" ? "bg-[#0a301d] text-[#bcff5f]" : "bg-red-600 text-white"
       }`}
     >
@@ -214,51 +223,72 @@ function DonationsTable() {
             <p className="font-medium text-gray-500 text-sm">No donor submissions yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Phone</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                    Date & Time (IST)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {donations.map((d, i) => (
-                  <tr
-                    key={d.id}
-                    className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-5 py-4 text-gray-400 font-medium">{i + 1}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-[#e8fccd] flex items-center justify-center text-[#12372a] font-bold text-xs shrink-0">
-                          {d.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="font-semibold text-gray-800">{d.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600 font-mono text-sm">{d.phone}</td>
-                    <td className="px-5 py-4">
-                      <a
-                        href={`mailto:${d.email}`}
-                        className="text-[#12372a] hover:underline font-medium"
-                      >
-                        {d.email}
-                      </a>
-                    </td>
-                    <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
-                      {formatDate(d.created_at)}
-                    </td>
+          <>
+            {/* Mobile: stacked cards */}
+            <div className="md:hidden flex flex-col divide-y divide-gray-100">
+              {donations.map((d) => (
+                <div key={d.id} className="p-4 flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#e8fccd] flex items-center justify-center text-[#12372a] font-bold text-sm shrink-0">
+                    {d.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-semibold text-gray-800 text-sm">{d.name}</span>
+                      <span className="text-[11px] text-gray-400 shrink-0">{formatDate(d.created_at)}</span>
+                    </div>
+                    <a href={`mailto:${d.email}`} className="text-xs text-[#12372a] font-medium truncate block mt-1">{d.email}</a>
+                    <span className="text-xs text-gray-500 font-mono mt-0.5 block">{d.phone}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop: table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Phone</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                      Date & Time (IST)
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {donations.map((d, i) => (
+                    <tr
+                      key={d.id}
+                      className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-5 py-4 text-gray-400 font-medium">{i + 1}</td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-[#e8fccd] flex items-center justify-center text-[#12372a] font-bold text-xs shrink-0">
+                            {d.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-semibold text-gray-800">{d.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-gray-600 font-mono text-sm">{d.phone}</td>
+                      <td className="px-5 py-4">
+                        <a
+                          href={`mailto:${d.email}`}
+                          className="text-[#12372a] hover:underline font-medium"
+                        >
+                          {d.email}
+                        </a>
+                      </td>
+                      <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
+                        {formatDate(d.created_at)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
@@ -331,59 +361,100 @@ function ContactMessagesTable() {
             <p className="font-medium text-gray-500 text-sm">No contact messages received.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm table-fixed">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-12">#</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-36">Name</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-48">Email</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">Subject</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Message Preview</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-40 whitespace-nowrap">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {messages.map((m, i) => (
-                  <tr key={m.id} className="border-b border-gray-50 last:border-b-0">
-                    <td colSpan={6} className="p-0">
-                      <table className="w-full text-sm table-fixed">
-                        <tbody>
-                          <tr
-                            onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
-                            className={`hover:bg-gray-50 transition-colors cursor-pointer ${
-                              expandedId === m.id ? "bg-green-50/20" : ""
-                            }`}
-                          >
-                            <td className="px-5 py-4 text-gray-400 font-medium w-12">{i + 1}</td>
-                            <td className="px-5 py-4 font-semibold text-gray-800 w-36 truncate">{m.name}</td>
-                            <td className="px-5 py-4 text-gray-600 font-mono text-xs w-48 truncate">{m.email}</td>
-                            <td className="px-5 py-4 text-gray-800 font-medium w-44 truncate">{m.subject}</td>
-                            <td className="px-5 py-4 text-gray-500 truncate">
-                              {m.message.length > 55 ? m.message.substring(0, 55) + "..." : m.message}
-                            </td>
-                            <td className="px-5 py-4 text-gray-500 text-xs w-40 whitespace-nowrap">{formatDate(m.created_at)}</td>
-                          </tr>
-                          {expandedId === m.id && (
-                            <tr className="bg-green-50/40">
-                              <td colSpan={6} className="px-10 py-6 border-t border-green-50">
-                                <div className="flex flex-col gap-2 w-full">
-                                  <span className="text-xs font-bold text-[#12372a] uppercase tracking-wider">Full Message</span>
-                                  <div className="bg-white border border-green-100 rounded-xl p-5 shadow-sm text-gray-800 text-base leading-relaxed whitespace-pre-wrap font-medium w-full">
-                                    {m.message}
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </td>
+          <>
+            {/* Mobile: stacked cards */}
+            <div className="md:hidden flex flex-col divide-y divide-gray-100">
+              {messages.map((m) => (
+                <div key={m.id}>
+                  <div
+                    onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
+                    className={`p-4 cursor-pointer transition-colors ${
+                      expandedId === m.id ? "bg-green-50/30" : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-gray-800 text-sm">{m.name}</span>
+                          <span className="text-[11px] text-gray-400">{formatDate(m.created_at)}</span>
+                        </div>
+                        <span className="text-xs text-gray-500 font-mono block truncate mt-0.5">{m.email}</span>
+                        <span className="text-xs font-semibold text-gray-700 block mt-1">{m.subject}</span>
+                        <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                          {m.message.length > 80 ? m.message.substring(0, 80) + "..." : m.message}
+                        </p>
+                      </div>
+                      <span className="text-gray-300 text-sm shrink-0 mt-1">{expandedId === m.id ? "▲" : "▼"}</span>
+                    </div>
+                  </div>
+                  {expandedId === m.id && (
+                    <div className="px-4 pb-4 bg-green-50/40 border-t border-green-50">
+                      <div className="flex flex-col gap-2 pt-3">
+                        <span className="text-xs font-bold text-[#12372a] uppercase tracking-wider">Full Message</span>
+                        <div className="bg-white border border-green-100 rounded-xl p-4 text-gray-800 text-sm leading-relaxed whitespace-pre-wrap font-medium">
+                          {m.message}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* Desktop: table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm table-fixed">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-12">#</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-36">Name</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-48">Email</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">Subject</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Message Preview</th>
+                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-40 whitespace-nowrap">Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {messages.map((m, i) => (
+                    <tr key={m.id} className="border-b border-gray-50 last:border-b-0">
+                      <td colSpan={6} className="p-0">
+                        <table className="w-full text-sm table-fixed">
+                          <tbody>
+                            <tr
+                              onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
+                              className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+                                expandedId === m.id ? "bg-green-50/20" : ""
+                              }`}
+                            >
+                              <td className="px-5 py-4 text-gray-400 font-medium w-12">{i + 1}</td>
+                              <td className="px-5 py-4 font-semibold text-gray-800 w-36 truncate">{m.name}</td>
+                              <td className="px-5 py-4 text-gray-600 font-mono text-xs w-48 truncate">{m.email}</td>
+                              <td className="px-5 py-4 text-gray-800 font-medium w-44 truncate">{m.subject}</td>
+                              <td className="px-5 py-4 text-gray-500 truncate">
+                                {m.message.length > 55 ? m.message.substring(0, 55) + "..." : m.message}
+                              </td>
+                              <td className="px-5 py-4 text-gray-500 text-xs w-40 whitespace-nowrap">{formatDate(m.created_at)}</td>
+                            </tr>
+                            {expandedId === m.id && (
+                              <tr className="bg-green-50/40">
+                                <td colSpan={6} className="px-10 py-6 border-t border-green-50">
+                                  <div className="flex flex-col gap-2 w-full">
+                                    <span className="text-xs font-bold text-[#12372a] uppercase tracking-wider">Full Message</span>
+                                    <div className="bg-white border border-green-100 rounded-xl p-5 shadow-sm text-gray-800 text-base leading-relaxed whitespace-pre-wrap font-medium w-full">
+                                      {m.message}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
       <div className="flex items-center gap-2 text-xs text-gray-400 px-1">
@@ -404,6 +475,8 @@ function OfflineDonationsTab() {
   const [loading, setLoading] = useState(false);
   const [records, setRecords] = useState<OfflineDonation[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
+  const [receiptLoading, setReceiptLoading] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState<string | null>(null);
 
   const loadRecords = useCallback(async () => {
     setLoadingRecords(true);
@@ -457,339 +530,242 @@ function OfflineDonationsTab() {
     }
   };
 
-  const handlePrintReceipt = (r: OfflineDonation) => {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
+  const buildReceiptContent = (r: OfflineDonation) => {
     const formattedDate = new Date(r.donation_date).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
+      day: "2-digit", month: "long", year: "numeric",
     });
-
     const formattedAmount = new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
+      style: "currency", currency: "INR", maximumFractionDigits: 0,
     }).format(r.amount);
+    const esc = (s: string) =>
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Donation Receipt - ${r.name}</title>
-        <style>
-          * { box-sizing: border-box; margin: 0; padding: 0; }
+    const safeName = r.name.replace(/[^a-zA-Z0-9]/g, "-").replace(/-+/g, "-");
+    const receiptNo = `RECP-${r.id.substring(0, 8).toUpperCase()}`;
 
-          @page {
-            size: A4 portrait;
-            margin: 0;
-          }
+    const lbl = (t: string) =>
+      `<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9ca3af;line-height:13px;">${t}</div>`;
+    const val = (t: string, mono = false) =>
+      `<div style="font-size:14px;font-weight:600;color:#111827;line-height:20px;margin-top:4px;${mono ? "font-family:'Courier New',monospace;" : ""}">${t}</div>`;
 
-          body {
-            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
-            background: #fff;
-            width: 210mm;
-            min-height: 297mm;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 24mm 18mm;
-            color: #1f2937;
-          }
+    const receiptHtml = `<div style="background:#f1f5f9;padding:48px 44px;font-family:Arial,Helvetica,sans-serif;color:#1f2937;-webkit-text-size-adjust:100%;text-size-adjust:100%;">
+  <div style="height:6px;background:#12372a;border-radius:4px 4px 0 0;"></div>
+  <div style="background:#ffffff;border:1.5px solid #d1d5db;border-top:none;border-radius:0 0 14px 14px;padding:28px 32px 24px;">
+    <table style="width:100%;border-collapse:collapse;border-bottom:1px solid #e5e7eb;">
+      <tr>
+        <td style="vertical-align:middle;padding-bottom:18px;">
+          <table style="border-collapse:collapse;">
+            <tr>
+              <td style="vertical-align:middle;padding-right:14px;">
+                <img src="https://res.cloudinary.com/dm3scoj2q/image/upload/v1780897979/T_logo_n_p9vebn.png" crossorigin="anonymous" alt="logo" style="height:54px;width:auto;max-width:160px;object-fit:contain;border-radius:12px;background:#fff;padding:8px 14px;display:block;" />
+              </td>
+              <td style="vertical-align:middle;">
+                <div style="font-size:20px;font-weight:800;color:#12372a;line-height:24px;">Tafheem-ul-Islam Trust</div>
+                <div style="font-size:10px;text-transform:uppercase;color:#6b7280;margin-top:3px;line-height:14px;">Hope &middot; Relief &middot; Community Service</div>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td style="vertical-align:middle;text-align:right;padding-bottom:18px;">
+          <span style="background:#12372a;color:#bcff5f;font-size:11px;font-weight:700;text-transform:uppercase;padding:7px 16px;border-radius:999px;display:inline-block;line-height:14px;white-space:nowrap;">Donation Receipt</span>
+        </td>
+      </tr>
+    </table>
+    <div style="background:#f0faf2;border:1.5px dashed #86efac;border-radius:10px;padding:14px 24px;margin-top:22px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="vertical-align:middle;">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:#14532d;line-height:16px;">Amount Contributed</div>
+          </td>
+          <td style="vertical-align:middle;text-align:right;">
+            <div style="font-size:24px;font-weight:800;color:#12372a;line-height:28px;">${esc(formattedAmount)}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-top:22px;">
+      <tr>
+        <td style="vertical-align:top;width:50%;padding-right:16px;padding-bottom:14px;">
+          ${lbl("Received From")}${val(esc(r.name))}
+        </td>
+        <td style="vertical-align:top;width:50%;padding-left:16px;padding-bottom:14px;">
+          ${lbl("Receipt Date")}${val(esc(formattedDate))}
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align:top;padding-right:16px;padding-bottom:14px;">
+          ${lbl("Mobile Number")}${val(esc(r.phone), true)}
+        </td>
+        <td style="vertical-align:top;padding-left:16px;padding-bottom:14px;">
+          ${lbl("Purpose of Donation")}${val(esc(r.purpose))}
+        </td>
+      </tr>
+      ${r.address ? `<tr><td colspan="2" style="vertical-align:top;padding-bottom:14px;">${lbl("Address")}${val(esc(r.address))}</td></tr>` : ""}
+    </table>
+    <div style="border-top:1px dashed #e5e7eb;margin:4px 0 22px;"></div>
+    <div style="background:#fafafa;border-left:3px solid #bcff5f;border-radius:4px;padding:12px 16px;font-size:12px;font-style:italic;color:#4b5563;line-height:20px;">
+      &ldquo;Thank you for your generous contribution. Tafheem-ul-Islam Trust deeply appreciates your support. Your contribution will be utilized for the welfare of orphans, widows, and needy families.&rdquo;
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-top:22px;">
+      <tr>
+        <td style="vertical-align:bottom;">
+          <div style="font-family:'Courier New',monospace;font-size:10px;color:#9ca3af;line-height:14px;">No: ${receiptNo}</div>
+          <div style="margin-top:6px;font-size:10px;font-weight:700;background:#e8fccd;color:#12372a;padding:5px 12px;border-radius:999px;border:1px solid #d0f5a0;display:inline-block;line-height:14px;">Offline Payment</div>
+        </td>
+        <td style="vertical-align:bottom;text-align:center;width:150px;">
+          <div style="border-top:1px solid #9ca3af;margin-bottom:5px;"></div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6b7280;line-height:13px;">Authorized Signatory</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>`;
 
-          .page {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-          }
+    return { receiptHtml, safeName, receiptNo };
+  };
 
-          /* ─── TOP BORDER STRIPE ─── */
-          .stripe {
-            height: 6px;
-            background: #12372a;
-            border-radius: 4px 4px 0 0;
-            margin-bottom: 0;
-          }
+  const handlePrintReceipt = async (r: OfflineDonation) => {
+    setReceiptLoading(r.id);
+    try {
+      const { receiptHtml, safeName, receiptNo } = buildReceiptContent(r);
 
-          /* ─── MAIN CARD ─── */
-          .card {
-            border: 1.5px solid #d1d5db;
-            border-top: none;
-            border-radius: 0 0 12px 12px;
-            padding: 28px 32px 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-          }
+      if (!window.matchMedia("(pointer: coarse)").matches) {
+        const escapedName = r.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Receipt — ${escapedName}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f1f5f9; margin: 0; padding: 0; }
+    @media print {
+      @page { size: A4 portrait; margin: 0; }
+      * { print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+    }
+  </style>
+</head>
+<body>
+  ${receiptHtml}
+  <script>
+    window.addEventListener('load', function() { setTimeout(function() { window.print(); }, 300); });
+    window.addEventListener('afterprint', function() { window.close(); });
+  <\/script>
+</body>
+</html>`;
+        const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
+        const blobUrl = URL.createObjectURL(blob);
+        const win = window.open(blobUrl, "_blank");
+        if (win) {
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
+          return;
+        }
+        URL.revokeObjectURL(blobUrl);
+      }
 
-          /* ─── HEADER ─── */
-          .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 18px;
-            border-bottom: 1px solid #e5e7eb;
-          }
+      document.getElementById("__rp_container__")?.remove();
+      const container = document.createElement("div");
+      container.id = "__rp_container__";
+      container.style.cssText = "position:absolute;top:-9999px;left:-9999px;width:794px;";
+      container.innerHTML = receiptHtml;
+      document.body.appendChild(container);
 
-          .header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-          }
+      const logoImg = container.querySelector("img");
+      if (logoImg && !logoImg.complete) {
+        await new Promise<void>((resolve) => {
+          logoImg.onload = () => resolve();
+          logoImg.onerror = () => resolve();
+          setTimeout(resolve, 5000);
+        });
+      }
 
-          .logo {
-            height: 54px;
-            width: auto;
-            max-width: 160px;
-            object-fit: contain;
-            border-radius: 12px;
-            background: #ffffff;
-            padding: 8px 14px;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.10);
-            display: block;
-          }
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
 
-          .org-name {
-            font-size: 19px;
-            font-weight: 800;
-            color: #12372a;
-            line-height: 1.2;
-          }
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#f1f5f9",
+        logging: false,
+        windowWidth: 794,
+      });
 
-          .org-sub {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6b7280;
-            margin-top: 3px;
-          }
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const imgH = (canvas.height / canvas.width) * pageW;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pageW, imgH);
+      pdf.save(`Receipt-${safeName}-${receiptNo}.pdf`);
 
-          .receipt-badge {
-            background: #12372a;
-            color: #bcff5f;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            padding: 6px 16px;
-            border-radius: 999px;
-          }
+    } catch (err) {
+      console.error("Receipt generation failed:", err);
+      alert("Could not generate the receipt. Please try again.");
+    } finally {
+      document.getElementById("__rp_container__")?.remove();
+      setReceiptLoading(null);
+    }
+  };
 
-          /* ─── AMOUNT HIGHLIGHT ─── */
-          .amount-row {
-            background: #f0faf2;
-            border: 1.5px dashed #86efac;
-            border-radius: 10px;
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-          }
+  const handleShareReceipt = async (r: OfflineDonation) => {
+    setShareLoading(r.id);
+    try {
+      const { receiptHtml, safeName, receiptNo } = buildReceiptContent(r);
+      const filename = `Receipt-${safeName}-${receiptNo}.pdf`;
 
-          .amount-label {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #14532d;
-          }
+      document.getElementById("__rp_container__")?.remove();
+      const container = document.createElement("div");
+      container.id = "__rp_container__";
+      container.style.cssText = "position:absolute;top:-9999px;left:-9999px;width:794px;";
+      container.innerHTML = receiptHtml;
+      document.body.appendChild(container);
 
-          .amount-value {
-            font-size: 24px;
-            font-weight: 800;
-            color: #12372a;
-            letter-spacing: -0.02em;
-          }
+      const logoImg = container.querySelector("img");
+      if (logoImg && !logoImg.complete) {
+        await new Promise<void>((resolve) => {
+          logoImg.onload = () => resolve();
+          logoImg.onerror = () => resolve();
+          setTimeout(resolve, 5000);
+        });
+      }
 
-          /* ─── DETAILS GRID ─── */
-          .details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px 32px;
-          }
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
 
-          .field {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-          }
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#f1f5f9",
+        logging: false,
+        windowWidth: 794,
+      });
 
-          .field-label {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: #9ca3af;
-          }
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const imgH = (canvas.height / canvas.width) * pageW;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pageW, imgH);
 
-          .field-value {
-            font-size: 13.5px;
-            font-weight: 600;
-            color: #111827;
-            line-height: 1.4;
-          }
+      const blob: Blob = pdf.output("blob");
+      const pdfFile = new File([blob], filename, { type: "application/pdf" });
 
-          .field-value.mono {
-            font-family: 'Courier New', monospace;
-          }
-
-          /* ─── DIVIDER ─── */
-          .divider {
-            border: none;
-            border-top: 1px dashed #e5e7eb;
-            margin: 0;
-          }
-
-          /* ─── QUOTE ─── */
-          .quote {
-            background: #fafafa;
-            border-left: 3px solid #bcff5f;
-            border-radius: 4px;
-            padding: 12px 16px;
-            font-size: 11.5px;
-            font-style: italic;
-            color: #4b5563;
-            line-height: 1.65;
-          }
-
-          /* ─── FOOTER ROW ─── */
-          .footer-row {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            padding-top: 6px;
-          }
-
-          .receipt-no {
-            font-family: 'Courier New', monospace;
-            font-size: 10px;
-            color: #9ca3af;
-          }
-
-          .payment-pill {
-            font-size: 10px;
-            font-weight: 700;
-            background: #e8fccd;
-            color: #12372a;
-            padding: 4px 12px;
-            border-radius: 999px;
-            border: 1px solid #d0f5a0;
-          }
-
-          .signature-area {
-            text-align: center;
-            min-width: 130px;
-          }
-
-          .sig-line {
-            border-top: 1px solid #9ca3af;
-            margin-bottom: 5px;
-          }
-
-          .sig-label {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #6b7280;
-          }
-
-          @media print {
-            body { padding: 24mm 18mm; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="page">
-          <div class="stripe"></div>
-          <div class="card">
-
-            <!-- HEADER -->
-            <div class="header">
-              <div class="header-left">
-                <img
-                  src="https://res.cloudinary.com/dm3scoj2q/image/upload/v1780897979/T_logo_n_p9vebn.png"
-                  class="logo"
-                  alt="Tafheem-ul-Islam Trust Logo"
-                />
-                <div>
-                  <div class="org-name">Tafheem-ul-Islam Trust</div>
-                  <div class="org-sub">Hope · Relief · Community Service</div>
-                </div>
-              </div>
-              <div class="receipt-badge">Donation Receipt</div>
-            </div>
-
-            <!-- AMOUNT -->
-            <div class="amount-row">
-              <span class="amount-label">Amount Contributed</span>
-              <span class="amount-value">${formattedAmount}</span>
-            </div>
-
-            <!-- DONOR + DONATION DETAILS -->
-            <div class="details-grid">
-              <div class="field">
-                <span class="field-label">Received From</span>
-                <span class="field-value">${r.name}</span>
-              </div>
-              <div class="field">
-                <span class="field-label">Receipt Date</span>
-                <span class="field-value">${formattedDate}</span>
-              </div>
-              <div class="field">
-                <span class="field-label">Mobile Number</span>
-                <span class="field-value mono">${r.phone}</span>
-              </div>
-              <div class="field">
-                <span class="field-label">Purpose of Donation</span>
-                <span class="field-value">${r.purpose}</span>
-              </div>
-              ${r.address ? `
-              <div class="field" style="grid-column: span 2;">
-                <span class="field-label">Address</span>
-                <span class="field-value">${r.address}</span>
-              </div>
-              ` : ''}
-            </div>
-
-            <hr class="divider" />
-
-            <!-- QUOTE -->
-            <div class="quote">
-              "Thank you for your generous contribution. Tafheem-ul-Islam Trust deeply appreciates your
-              support. Your contribution will be utilized for the welfare of orphans, widows, and needy families."
-            </div>
-
-            <!-- FOOTER -->
-            <div class="footer-row">
-              <div>
-                <div class="receipt-no">No: RECP-${r.id.substring(0, 8).toUpperCase()}</div>
-                <div class="payment-pill" style="margin-top: 6px;">Offline Payment</div>
-              </div>
-              <div class="signature-area">
-                <div class="sig-line"></div>
-                <div class="sig-label">Authorized Signatory</div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <script>
-          window.onload = function () {
-            window.print();
-            setTimeout(function () { window.close(); }, 500);
-          };
-        </script>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.open();
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+      if (navigator.canShare?.({ files: [pdfFile] })) {
+        await navigator.share({
+          files: [pdfFile],
+          title: "Donation Receipt",
+          text: `Donation receipt for ${r.name}`,
+        });
+      } else {
+        pdf.save(filename);
+      }
+    } catch (err) {
+      console.error("Share receipt failed:", err);
+      alert("Could not share the receipt. Please try again.");
+    } finally {
+      document.getElementById("__rp_container__")?.remove();
+      setShareLoading(null);
+    }
   };
 
   const formatCurrency = (num: number) => {
@@ -917,55 +893,324 @@ function OfflineDonationsTab() {
               <p className="font-medium text-gray-500">No offline entries recorded yet.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Donor</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Phone</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Amount</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Purpose</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Receipt</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r, i) => (
-                    <tr
-                      key={r.id}
-                      className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-5 py-4 text-gray-400 font-medium">{i + 1}</td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-gray-800">{r.name}</span>
-                          {r.address && <span className="text-xs text-gray-400 mt-0.5">{r.address}</span>}
+            <>
+              {/* Mobile: stacked cards */}
+              <div className="md:hidden flex flex-col divide-y divide-gray-100">
+                {records.map((r) => (
+                  <div key={r.id} className="p-4 flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-gray-800 text-sm block">{r.name}</span>
+                          {r.address && <span className="text-xs text-gray-400 truncate block mt-0.5">{r.address}</span>}
                         </div>
-                      </td>
-                      <td className="px-5 py-4 text-gray-600 font-mono text-sm">{r.phone}</td>
-                      <td className="px-5 py-4 font-bold text-gray-900">{formatCurrency(r.amount)}</td>
-                      <td className="px-5 py-4 text-gray-500 text-xs">{r.purpose}</td>
-                      <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">{r.donation_date}</td>
-                      <td className="px-5 py-4">
-                        <button
-                          onClick={() => handlePrintReceipt(r)}
-                          className="bg-green-50 text-[#12372a] hover:bg-[#12372a] hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-green-200/50"
-                        >
-                          Receipt
-                        </button>
-                      </td>
+                        <span className="font-bold text-gray-900 text-sm shrink-0">{formatCurrency(r.amount)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <span className="text-xs text-gray-500 font-mono">{r.phone}</span>
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{r.purpose}</span>
+                        <span className="text-xs text-gray-400">{r.donation_date}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5 shrink-0">
+                      <button
+                        onClick={() => handlePrintReceipt(r)}
+                        disabled={receiptLoading === r.id || shareLoading === r.id}
+                        className="bg-green-50 text-[#12372a] hover:bg-[#12372a] hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-green-200/50 disabled:opacity-60 disabled:cursor-wait flex items-center gap-1"
+                      >
+                        {receiptLoading === r.id ? (
+                          <><Loader2 size={11} className="animate-spin" /> PDF</>
+                        ) : "Receipt"}
+                      </button>
+                      <button
+                        onClick={() => handleShareReceipt(r)}
+                        disabled={shareLoading === r.id || receiptLoading === r.id}
+                        className="bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-blue-200/50 disabled:opacity-60 disabled:cursor-wait flex items-center gap-1"
+                      >
+                        {shareLoading === r.id ? (
+                          <><Loader2 size={11} className="animate-spin" /> Sharing…</>
+                        ) : <><Share2 size={11} /> Share</>}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Desktop: table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Donor</th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Phone</th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Amount</th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Purpose</th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {records.map((r, i) => (
+                      <tr
+                        key={r.id}
+                        className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-5 py-4 text-gray-400 font-medium">{i + 1}</td>
+                        <td className="px-5 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-800">{r.name}</span>
+                            {r.address && <span className="text-xs text-gray-400 mt-0.5">{r.address}</span>}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-gray-600 font-mono text-sm">{r.phone}</td>
+                        <td className="px-5 py-4 font-bold text-gray-900">{formatCurrency(r.amount)}</td>
+                        <td className="px-5 py-4 text-gray-500 text-xs">{r.purpose}</td>
+                        <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">{r.donation_date}</td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handlePrintReceipt(r)}
+                              disabled={receiptLoading === r.id || shareLoading === r.id}
+                              className="bg-green-50 text-[#12372a] hover:bg-[#12372a] hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-green-200/50 disabled:opacity-60 disabled:cursor-wait flex items-center gap-1"
+                            >
+                              {receiptLoading === r.id ? (
+                                <><Loader2 size={11} className="animate-spin" /> Generating…</>
+                              ) : "Receipt"}
+                            </button>
+                            <button
+                              onClick={() => handleShareReceipt(r)}
+                              disabled={shareLoading === r.id || receiptLoading === r.id}
+                              className="bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-blue-200/50 disabled:opacity-60 disabled:cursor-wait flex items-center gap-1"
+                            >
+                              {shareLoading === r.id ? (
+                                <><Loader2 size={11} className="animate-spin" /> Sharing…</>
+                              ) : <><Share2 size={11} /> Share</>}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-400 px-1">
           <span className="w-2 h-2 rounded-full bg-[#bcff5f] inline-block" />
           {records.length} record{records.length !== 1 ? "s" : ""} total
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PartnersTab({ showToast }: { showToast: (msg: string, type: "success" | "error") => void }) {
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [partnerName, setPartnerName] = useState("");
+  const [partnerDescription, setPartnerDescription] = useState("");
+  const [partnerFile, setPartnerFile] = useState<File | null>(null);
+  const [partnerPreview, setPartnerPreview] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  const loadPartners = useCallback(async () => {
+    setLoadingRecords(true);
+    const { data, error } = await supabase
+      .schema(GALLERY_SCHEMA)
+      .from(PARTNERS_TABLE)
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (!error) setPartners(data || []);
+    setLoadingRecords(false);
+  }, []);
+
+  useEffect(() => {
+    loadPartners();
+  }, [loadPartners]);
+
+  const handlePartnerFile = (f: File) => {
+    if (!f.type.startsWith("image/")) {
+      showToast("Only image files are allowed for partner photos.", "error");
+      return;
+    }
+    setPartnerFile(f);
+    const reader = new FileReader();
+    reader.onload = (e) => setPartnerPreview((e.target?.result as string) || null);
+    reader.readAsDataURL(f);
+  };
+
+  const handleAddPartner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!partnerFile || !partnerName.trim() || !partnerDescription.trim()) {
+      showToast("Please fill all fields and select a photo.", "error");
+      return;
+    }
+    setUploading(true);
+    const safeName = `${Date.now()}-${partnerFile.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+    const { error: uploadError } = await supabase.storage
+      .from(PARTNERS_BUCKET)
+      .upload(safeName, partnerFile, { cacheControl: "3600", upsert: false });
+    if (uploadError) {
+      setUploading(false);
+      if (uploadError.message.toLowerCase().includes("bucket") || uploadError.message.toLowerCase().includes("not found")) {
+        showToast(`Storage bucket "${PARTNERS_BUCKET}" not found. Please create it in Supabase Storage dashboard (set to Public).`, "error");
+      } else {
+        showToast(uploadError.message, "error");
+      }
+      return;
+    }
+    const { error: insertError } = await supabase
+      .schema(GALLERY_SCHEMA)
+      .from(PARTNERS_TABLE)
+      .insert({ name: partnerName.trim(), description: partnerDescription.trim(), photo_path: safeName });
+    if (insertError) {
+      await supabase.storage.from(PARTNERS_BUCKET).remove([safeName]);
+      setUploading(false);
+      showToast(insertError.message, "error");
+      return;
+    }
+    setUploading(false);
+    setPartnerFile(null);
+    setPartnerPreview(null);
+    setPartnerName("");
+    setPartnerDescription("");
+    showToast("Partner added successfully!", "success");
+    loadPartners();
+  };
+
+  const handleDeletePartner = async (partner: Partner) => {
+    const confirmed = window.confirm(`Delete partner "${partner.name}"? This cannot be undone.`);
+    if (!confirmed) return;
+    if (partner.photo_path) {
+      await supabase.storage.from(PARTNERS_BUCKET).remove([partner.photo_path]);
+    }
+    const { error } = await supabase
+      .schema(GALLERY_SCHEMA)
+      .from(PARTNERS_TABLE)
+      .delete()
+      .eq("id", partner.id);
+    if (error) {
+      showToast(error.message, "error");
+      return;
+    }
+    showToast("Partner deleted.", "success");
+    loadPartners();
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+      <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6">
+        <div>
+          <h2 className="font-display text-xl font-bold text-gray-900">Add Partner</h2>
+          <p className="text-sm text-gray-400 mt-1">Upload photo, name, and description</p>
+        </div>
+        <form onSubmit={handleAddPartner} className="flex flex-col gap-5">
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handlePartnerFile(f); }}
+            onClick={() => document.getElementById("partner-file-input")?.click()}
+            className={`relative border-2 border-dashed rounded-2xl transition-colors cursor-pointer flex flex-col items-center justify-center gap-3 ${
+              dragOver ? "border-[#12372a] bg-[#e8fccd]/40" : "border-gray-200 hover:border-gray-300 bg-gray-50"
+            } ${partnerPreview ? "p-2" : "p-8"}`}
+          >
+            <input id="partner-file-input" type="file" accept="image/*" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePartnerFile(f); }} />
+            {partnerPreview ? (
+              <>
+                <img src={partnerPreview} alt="Partner preview" className="w-full rounded-xl object-cover max-h-48" />
+                <p className="text-xs text-gray-400 pb-2">{partnerFile?.name}</p>
+                <button type="button"
+                  onClick={(e) => { e.stopPropagation(); setPartnerFile(null); setPartnerPreview(null); }}
+                  className="absolute top-2 right-2 bg-white border border-gray-200 rounded-full p-1.5 shadow-sm hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors">
+                  <X size={14} />
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-xl bg-[#e8fccd] flex items-center justify-center">
+                  <Upload size={22} className="text-[#12372a]" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-gray-700">Drop partner photo or click to browse</p>
+                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG, WEBP</p>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700">Partner Name</label>
+            <input type="text" required value={partnerName} onChange={(e) => setPartnerName(e.target.value)}
+              placeholder="Organisation or individual name"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#12372a] text-sm outline-none bg-white" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700">Description</label>
+            <textarea required value={partnerDescription} onChange={(e) => setPartnerDescription(e.target.value)}
+              placeholder="Brief description of the partner"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#12372a] text-sm outline-none bg-white resize-none h-24" />
+          </div>
+          <button type="submit" disabled={uploading || !partnerFile}
+            className="bg-[#12372a] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+            {uploading ? (
+              <><Loader2 size={16} className="animate-spin" /> Adding...</>
+            ) : (
+              <><PlusCircle size={16} /> Add Partner</>
+            )}
+          </button>
+        </form>
+      </div>
+
+      <div className="lg:col-span-3 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl font-bold text-gray-900">
+            All Partners <span className="text-gray-400 font-normal text-base">({partners.length})</span>
+          </h2>
+          <button onClick={loadPartners} className="text-xs text-gray-400 hover:text-[#12372a] font-semibold transition-colors">
+            ↻ Refresh
+          </button>
+        </div>
+        {loadingRecords ? (
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 flex gap-4 animate-pulse">
+                <div className="w-16 h-16 rounded-xl bg-gray-100 shrink-0" />
+                <div className="flex-1 flex flex-col gap-2 justify-center">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-100 rounded w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : partners.length === 0 ? (
+          <div className="flex flex-col items-center py-20 text-gray-400 bg-white border border-gray-200 rounded-2xl">
+            <Users2 size={40} className="mb-3 opacity-20" />
+            <p className="font-medium text-gray-500">No partners yet. Add one above.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 max-h-[640px] overflow-y-auto pr-1">
+            <AnimatePresence>
+              {partners.map((partner) => (
+                <motion.div key={partner.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
+                  className="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4 group hover:shadow-sm transition-shadow">
+                  <img src={getPartnerPhotoUrl(partner.photo_path)} alt={partner.name}
+                    className="w-16 h-16 rounded-xl object-cover shrink-0 bg-gray-100" loading="lazy" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{partner.name}</p>
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{partner.description}</p>
+                  </div>
+                  <button onClick={() => handleDeletePartner(partner)}
+                    className="shrink-0 p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+                    aria-label={`Delete ${partner.name}`}>
+                    <Trash2 size={16} />
+                  </button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -979,10 +1224,11 @@ export function AdminGalleryPage() {
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"gallery" | "donors" | "contact" | "offline">("gallery");
+  const [activeTab, setActiveTab] = useState<"gallery" | "donors" | "contact" | "offline" | "partners">("gallery");
 
   const [caption, setCaption] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -1022,11 +1268,14 @@ export function AdminGalleryPage() {
   }, [authed, loadItems]);
 
   const handleFile = (f: File) => {
-    if (!f.type.startsWith("image/")) {
-      showToast("Only image files are allowed.", "error");
+    const isVideo = f.type.startsWith("video/");
+    const isImage = f.type.startsWith("image/");
+    if (!isImage && !isVideo) {
+      showToast("Only image or video files are allowed.", "error");
       return;
     }
 
+    setMediaType(isVideo ? "video" : "image");
     setFile(f);
 
     const reader = new FileReader();
@@ -1049,16 +1298,17 @@ export function AdminGalleryPage() {
     e.preventDefault();
 
     if (!file || !caption.trim()) {
-      showToast("Please select an image and enter a caption.", "error");
+      showToast("Please select a file and enter a caption.", "error");
       return;
     }
 
     setUploading(true);
 
     const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+    const bucket = mediaType === "video" ? GALLERY_VIDEO_BUCKET : GALLERY_BUCKET;
 
     const { error: uploadError } = await supabase.storage
-      .from(GALLERY_BUCKET)
+      .from(bucket)
       .upload(safeName, file, {
         cacheControl: "3600",
         upsert: false,
@@ -1066,7 +1316,11 @@ export function AdminGalleryPage() {
 
     if (uploadError) {
       setUploading(false);
-      showToast(uploadError.message, "error");
+      if (uploadError.message.toLowerCase().includes("bucket") || uploadError.message.toLowerCase().includes("not found")) {
+        showToast(`Storage bucket "${bucket}" not found. Please create it in Supabase Storage dashboard (set to Public).`, "error");
+      } else {
+        showToast(uploadError.message, "error");
+      }
       return;
     }
 
@@ -1078,10 +1332,11 @@ export function AdminGalleryPage() {
         caption: caption.trim(),
         category,
         sort_order: 0,
+        media_type: mediaType,
       });
 
     if (insertError) {
-      await supabase.storage.from(GALLERY_BUCKET).remove([safeName]);
+      await supabase.storage.from(bucket).remove([safeName]);
       setUploading(false);
       showToast(insertError.message, "error");
       return;
@@ -1092,7 +1347,8 @@ export function AdminGalleryPage() {
     setPreview(null);
     setCaption("");
     setCategory(CATEGORIES[0]);
-    showToast("Image uploaded successfully!", "success");
+    setMediaType("image");
+    showToast(`${mediaType === "video" ? "Video" : "Image"} uploaded successfully!`, "success");
     loadItems();
   };
 
@@ -1100,8 +1356,9 @@ export function AdminGalleryPage() {
     const confirmed = window.confirm(`Delete "${item.caption}"? This cannot be undone.`);
     if (!confirmed) return;
 
+    const bucket = item.media_type === "video" ? GALLERY_VIDEO_BUCKET : GALLERY_BUCKET;
     const { error: storageError } = await supabase.storage
-      .from(GALLERY_BUCKET)
+      .from(bucket)
       .remove([item.file_path]);
 
     if (storageError) {
@@ -1161,12 +1418,13 @@ export function AdminGalleryPage() {
       </header>
 
       <main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-20 py-8 md:py-12 flex flex-col gap-8">
-        <div className="mx-auto flex justify-center bg-[#0a301d] p-1.5 rounded-full shadow-md max-w-2xl w-full gap-2 mt-4">
+        <div className="mx-auto flex justify-center bg-[#0a301d] p-1 sm:p-1.5 rounded-2xl sm:rounded-full shadow-md max-w-2xl w-full gap-1 sm:gap-2 mt-4">
           {[
             { id: "gallery", label: "Gallery", icon: ImageIcon },
             { id: "donors", label: "Donors", icon: Users },
             { id: "contact", label: "Contact", icon: MessageSquare },
-            { id: "offline", label: "Offline Entry", icon: Wallet },
+            { id: "partners", label: "Partners", icon: Users2 },
+            { id: "offline", label: "Offline", icon: Wallet },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1174,14 +1432,14 @@ export function AdminGalleryPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 py-3 px-6 rounded-full font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2.5 outline-none ${
+                className={`flex-1 py-2 sm:py-3 px-1 sm:px-5 rounded-xl sm:rounded-full font-bold text-[11px] sm:text-sm md:text-base transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2.5 outline-none leading-tight ${
                   active
                     ? "bg-[#bcff5f] text-[#0a301d] shadow-md"
                     : "text-white hover:text-[#bcff5f] hover:bg-white/10"
                 }`}
               >
-                <Icon size={16} />
-                {tab.label}
+                <Icon size={15} />
+                <span>{tab.label}</span>
               </button>
             );
           })}
@@ -1192,7 +1450,7 @@ export function AdminGalleryPage() {
             <div className="flex flex-col gap-8">
               <div className="grid grid-cols-2 gap-4 max-w-md">
                 {[
-                  { label: "Total Images", value: items.length },
+                  { label: "Total Media", value: items.length },
                   { label: "Categories", value: new Set(items.map((i) => i.category)).size },
                 ].map((stat) => (
                   <div key={stat.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -1207,10 +1465,10 @@ export function AdminGalleryPage() {
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
                 <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6">
                   <div>
-                    <h2 className="font-display text-xl font-bold text-gray-900">Upload Image</h2>
+                    <h2 className="font-display text-xl font-bold text-gray-900">Upload Media</h2>
                     <p className="text-sm text-gray-400 mt-1">
-                      Uploaded to bucket{" "}
-                      <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">gallery-images</code>
+                      Images → <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">gallery-images</code>
+                      {" "}· Videos → <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">gallery-videos</code>
                     </p>
                   </div>
 
@@ -1232,7 +1490,7 @@ export function AdminGalleryPage() {
                       <input
                         id="gallery-file-input"
                         type="file"
-                        accept="image/*"
+                        accept="image/*,video/*"
                         className="hidden"
                         onChange={(e) => {
                           const f = e.target.files?.[0];
@@ -1242,11 +1500,11 @@ export function AdminGalleryPage() {
 
                       {preview ? (
                         <>
-                          <img
-                            src={preview}
-                            alt="Preview"
-                            className="w-full rounded-xl object-cover max-h-48"
-                          />
+                          {mediaType === "video" ? (
+                            <video src={preview} controls className="w-full rounded-xl max-h-48" />
+                          ) : (
+                            <img src={preview} alt="Preview" className="w-full rounded-xl object-cover max-h-48" />
+                          )}
                           <p className="text-xs text-gray-400 pb-2">{file?.name}</p>
                           <button
                             type="button"
@@ -1254,6 +1512,7 @@ export function AdminGalleryPage() {
                               e.stopPropagation();
                               setFile(null);
                               setPreview(null);
+                              setMediaType("image");
                             }}
                             className="absolute top-2 right-2 bg-white border border-gray-200 rounded-full p-1.5 shadow-sm hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors"
                           >
@@ -1266,8 +1525,8 @@ export function AdminGalleryPage() {
                             <Upload size={22} className="text-[#12372a]" />
                           </div>
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-gray-700">Drop image here or click to browse</p>
-                            <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG, WEBP supported</p>
+                            <p className="text-sm font-semibold text-gray-700">Drop image or video here or click to browse</p>
+                            <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · MP4, MOV, WEBM</p>
                           </div>
                         </>
                       )}
@@ -1310,7 +1569,7 @@ export function AdminGalleryPage() {
                         </>
                       ) : (
                         <>
-                          <Upload size={16} /> Upload Image
+                          <Upload size={16} /> Upload {mediaType === "video" ? "Video" : "Image"}
                         </>
                       )}
                     </button>
@@ -1320,7 +1579,7 @@ export function AdminGalleryPage() {
                 <div className="lg:col-span-3 flex flex-col gap-4">
                   <div className="flex items-center justify-between">
                     <h2 className="font-display text-xl font-bold text-gray-900">
-                      All Images <span className="text-gray-400 font-normal text-base">({items.length})</span>
+                      All Media <span className="text-gray-400 font-normal text-base">({items.length})</span>
                     </h2>
 
                     <button
@@ -1346,7 +1605,7 @@ export function AdminGalleryPage() {
                   ) : items.length === 0 ? (
                     <div className="flex flex-col items-center py-20 text-gray-400 bg-white border border-gray-200 rounded-2xl">
                       <ImageIcon size={40} className="mb-3 opacity-20" />
-                      <p className="font-medium text-gray-500">No images yet. Upload one to get started.</p>
+                      <p className="font-medium text-gray-500">No media yet. Upload one to get started.</p>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3 max-h-[640px] overflow-y-auto pr-1">
@@ -1359,12 +1618,19 @@ export function AdminGalleryPage() {
                             exit={{ opacity: 0, x: -20 }}
                             className="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4 group hover:shadow-sm transition-shadow"
                           >
-                            <img
-                              src={getGalleryImageUrl(item.file_path)}
-                              alt={item.caption}
-                              className="w-16 h-16 rounded-xl object-cover shrink-0 bg-gray-100"
-                              loading="lazy"
-                            />
+                            {item.media_type === "video" ? (
+                              <video
+                                src={getGalleryVideoUrl(item.file_path)}
+                                className="w-16 h-16 rounded-xl object-cover shrink-0 bg-gray-100"
+                              />
+                            ) : (
+                              <img
+                                src={getGalleryImageUrl(item.file_path)}
+                                alt={item.caption}
+                                className="w-16 h-16 rounded-xl object-cover shrink-0 bg-gray-100"
+                                loading="lazy"
+                              />
+                            )}
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-800 truncate">{item.caption}</p>
                               <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#e8fccd] text-[#12372a] border border-[#d0f5a0]">
@@ -1374,7 +1640,7 @@ export function AdminGalleryPage() {
 
                             <button
                               onClick={() => handleDelete(item)}
-                              className="shrink-0 p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                              className="shrink-0 p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
                               aria-label={`Delete ${item.caption}`}
                             >
                               <Trash2 size={16} />
@@ -1394,6 +1660,8 @@ export function AdminGalleryPage() {
           {activeTab === "contact" && <ContactMessagesTable />}
 
           {activeTab === "offline" && <OfflineDonationsTab />}
+
+          {activeTab === "partners" && <PartnersTab showToast={showToast} />}
         </div>
       </main>
 

@@ -16,6 +16,7 @@ import { ContactPage } from "./pages/ContactPage";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { GalleryPage } from "./pages/GalleryPage";
+import { PartnersPage } from "./pages/PartnersPage";
 import { AdminGalleryPage } from "./pages/AdminGalleryPage";
 
 
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/about-us" element={<About />} />
         <Route path="/mission" element={<MissionPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/partners" element={<PartnersPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/donate" element={<Donate />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />

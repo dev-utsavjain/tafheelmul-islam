@@ -23,6 +23,7 @@ export type GalleryItem = {
     category: string;
     sort_order: number;
     created_at: string;
+    media_type: 'image' | 'video';
 };
 
 export type Donation = {
@@ -53,7 +54,29 @@ export type OfflineDonation = {
     created_at: string;
 };
 
+export const GALLERY_VIDEO_BUCKET = "gallery-videos";
+export const PARTNERS_TABLE = "partners";
+export const PARTNERS_BUCKET = "partner-photos";
+
+export type Partner = {
+    id: string;
+    name: string;
+    description: string;
+    photo_path: string;
+    created_at: string;
+};
+
 export function getGalleryImageUrl(filePath: string) {
     const { data } = supabase.storage.from(GALLERY_BUCKET).getPublicUrl(filePath);
+    return data.publicUrl;
+}
+
+export function getGalleryVideoUrl(filePath: string) {
+    const { data } = supabase.storage.from(GALLERY_VIDEO_BUCKET).getPublicUrl(filePath);
+    return data.publicUrl;
+}
+
+export function getPartnerPhotoUrl(filePath: string) {
+    const { data } = supabase.storage.from(PARTNERS_BUCKET).getPublicUrl(filePath);
     return data.publicUrl;
 }

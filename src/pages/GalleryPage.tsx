@@ -1,11 +1,12 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ZoomIn, ChevronLeft, ChevronRight, Camera } from "lucide-react";
+import { X, ZoomIn, ChevronLeft, ChevronRight, Camera, Video } from "lucide-react";
 import {
   supabase,
   type GalleryItem,
   getGalleryImageUrl,
+  getGalleryVideoUrl,
   GALLERY_SCHEMA,
   GALLERY_TABLE,
 } from "../lib/supabase";
@@ -82,12 +83,21 @@ function Lightbox({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-[#0a301d]">
-            <img
-              src={getGalleryImageUrl(item.file_path)}
-              alt={item.caption}
-              className="w-full max-h-[72vh] object-contain"
-              loading="lazy"
-            />
+            {item.media_type === 'video' ? (
+              <video
+                src={getGalleryVideoUrl(item.file_path)}
+                controls
+                autoPlay
+                className="w-full max-h-[72vh]"
+              />
+            ) : (
+              <img
+                src={getGalleryImageUrl(item.file_path)}
+                alt={item.caption}
+                className="w-full max-h-[72vh] object-contain"
+                loading="lazy"
+              />
+            )}
             <span className="absolute top-3 left-3 inline-flex items-center px-3 py-1 rounded-full border border-green-500/30 text-[#bcff5f] text-xs font-semibold bg-[#0a301d]/80 backdrop-blur-sm">
               {item.category}
             </span>
@@ -142,6 +152,7 @@ function Lightbox({
 export function GalleryPage() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeMediaType, setActiveMediaType] = useState<'photos' | 'videos'>('photos');
   const [activeCategory, setActiveCategory] = useState("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -168,15 +179,22 @@ export function GalleryPage() {
     loadGallery();
   }, [loadGallery]);
 
+  const mediaFiltered = useMemo(
+    () => items.filter((i) =>
+      activeMediaType === 'photos' ? i.media_type !== 'video' : i.media_type === 'video'
+    ),
+    [items, activeMediaType]
+  );
+
   const allCategories = useMemo(
-    () => ["All", ...Array.from(new Set(items.map((i) => i.category))).sort()],
-    [items]
+    () => ["All", ...Array.from(new Set(mediaFiltered.map((i) => i.category))).sort()],
+    [mediaFiltered]
   );
 
   const filtered =
     activeCategory === "All"
-      ? items
-      : items.filter((i) => i.category === activeCategory);
+      ? mediaFiltered
+      : mediaFiltered.filter((i) => i.category === activeCategory);
 
   const openLightbox = useCallback((idx: number) => setLightboxIndex(idx), []);
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
@@ -239,6 +257,26 @@ export function GalleryPage() {
 
         {!loading && items.length > 0 && (
           <section className="flex flex-col gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="inline-flex bg-gray-100 p-1 rounded-full">
+                {(['photos', 'videos'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => {
+                      setActiveMediaType(type);
+                      setActiveCategory("All");
+                    }}
+                    className={`px-5 py-1.5 rounded-full text-sm font-semibold transition-all capitalize ${
+                      activeMediaType === type
+                        ? 'bg-[#12372a] text-white shadow-sm'
+                        : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2">
               {allCategories.map((cat, i) => (
                 <motion.button
@@ -258,7 +296,7 @@ export function GalleryPage() {
                       className={`ml-1.5 text-xs font-normal ${activeCategory === cat ? "text-[#bcff5f]" : "text-gray-400"
                         }`}
                     >
-                      ({items.filter((i) => i.category === cat).length})
+                      ({mediaFiltered.filter((i) => i.category === cat).length})
                     </span>
                   )}
                 </motion.button>
@@ -266,13 +304,15 @@ export function GalleryPage() {
             </div>
 
             <motion.p
-              key={activeCategory}
+              key={`${activeCategory}-${activeMediaType}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-sm text-gray-400"
             >
               Showing <span className="font-semibold text-gray-700">{filtered.length}</span>{" "}
-              {filtered.length === 1 ? "image" : "images"}
+              {activeMediaType === 'photos'
+                ? filtered.length === 1 ? "photo" : "photos"
+                : filtered.length === 1 ? "video" : "videos"}
               {activeCategory !== "All" && (
                 <>
                   {" "}in <span className="font-semibold text-[#12372a]">{activeCategory}</span>
@@ -318,14 +358,24 @@ export function GalleryPage() {
                     aria-label={`View: ${item.caption}`}
                   >
                     <div className="aspect-square overflow-hidden bg-gray-100">
-                      <motion.img
-                        src={getGalleryImageUrl(item.file_path)}
-                        alt={item.caption}
-                        loading="lazy"
-                        width={480}
-                        height={480}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                      {item.media_type === 'video' ? (
+                        <video
+                          src={getGalleryVideoUrl(item.file_path)}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          muted
+                          playsInline
+                          preload="metadata"
+                        />
+                      ) : (
+                        <motion.img
+                          src={getGalleryImageUrl(item.file_path)}
+                          alt={item.caption}
+                          loading="lazy"
+                          width={480}
+                          height={480}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      )}
                     </div>
 
                     <div className="px-4 py-3 flex items-center justify-between gap-2">
@@ -354,9 +404,15 @@ export function GalleryPage() {
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center py-24 text-gray-400"
             >
-              <Camera size={48} className="mb-4 opacity-25" />
+              {activeMediaType === 'videos' ? (
+                <Video size={48} className="mb-4 opacity-25" />
+              ) : (
+                <Camera size={48} className="mb-4 opacity-25" />
+              )}
               <p className="text-lg font-medium text-gray-500">
-                {items.length === 0 ? "No images in the gallery yet." : "No images in this category"}
+                {mediaFiltered.length === 0
+                  ? `No ${activeMediaType} in the gallery yet.`
+                  : `No ${activeMediaType} in this category`}
               </p>
             </motion.div>
           )}

@@ -78,6 +78,12 @@ export function Footer() {
           </Link>
           <Link
             className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
+            to="/partners"
+          >
+            Partners
+          </Link>
+          <Link
+            className="text-gray-600 hover:text-[#12372a] underline transition-all opacity-100 hover:opacity-80"
             to="/contact"
           >
             Contact Us
