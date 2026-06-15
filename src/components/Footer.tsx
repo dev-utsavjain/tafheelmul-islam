@@ -1,4 +1,3 @@
-import { Landmark } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Footer() {
@@ -19,19 +18,6 @@ export function Footer() {
             communities in Kashmir. Your contribution makes a lasting
             difference.
           </p>
-          {/* Bank Details Mini-Card */}
-          <div className="mt-2 lg:mt-4 bg-gray-50 border border-gray-200 p-3 md:p-4 rounded-xl max-w-sm">
-            <p className="font-bold text-gray-900 mb-1.5 md:mb-2 flex items-center gap-2 text-sm md:text-base">
-              <Landmark className="text-[#12372a] w-4 h-4 rounded" /> Bank Details
-            </p>
-            <p className="text-xs md:text-sm text-gray-500 font-mono">
-              Acct: 1234-5678-9012
-              <br />
-              Bank of Kashmir
-              <br />
-              IFSC: BOK0001234
-            </p>
-          </div>
         </div>
         
         {/* Links */}
