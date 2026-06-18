@@ -161,7 +161,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-function DonationsTable() {
+function DonationsTable({ showToast }: { showToast: (msg: string, type: "success" | "error") => void }) {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -172,6 +172,7 @@ function DonationsTable() {
       .schema(GALLERY_SCHEMA)
       .from(DONATIONS_TABLE)
       .select("*")
+      .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
     if (!error) {
@@ -180,6 +181,17 @@ function DonationsTable() {
 
     setLoading(false);
   }, []);
+
+  const handleArchive = async (d: Donation) => {
+    const { error } = await supabase
+      .schema(GALLERY_SCHEMA)
+      .from(DONATIONS_TABLE)
+      .update({ is_archived: true })
+      .eq("id", d.id);
+    if (error) { showToast(error.message, "error"); return; }
+    showToast("Record removed.", "success");
+    loadDonations();
+  };
 
   useEffect(() => {
     loadDonations();
@@ -239,6 +251,9 @@ function DonationsTable() {
                     <a href={`mailto:${d.email}`} className="text-xs text-[#12372a] font-medium truncate block mt-1">{d.email}</a>
                     <span className="text-xs text-gray-500 font-mono mt-0.5 block">{d.phone}</span>
                   </div>
+                  <button onClick={() => handleArchive(d)} className="shrink-0 p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -254,6 +269,7 @@ function DonationsTable() {
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                       Date & Time (IST)
                     </th>
+                    <th className="px-3 py-3.5 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -283,6 +299,11 @@ function DonationsTable() {
                       <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
                         {formatDate(d.created_at)}
                       </td>
+                      <td className="px-3 py-4">
+                        <button onClick={() => handleArchive(d)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove">
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -300,7 +321,7 @@ function DonationsTable() {
   );
 }
 
-function ContactMessagesTable() {
+function ContactMessagesTable({ showToast }: { showToast: (msg: string, type: "success" | "error") => void }) {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -311,6 +332,7 @@ function ContactMessagesTable() {
       .schema(GALLERY_SCHEMA)
       .from(CONTACT_TABLE)
       .select("*")
+      .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
     if (!error) {
@@ -318,6 +340,17 @@ function ContactMessagesTable() {
     }
     setLoading(false);
   }, []);
+
+  const handleArchive = async (m: ContactMessage) => {
+    const { error } = await supabase
+      .schema(GALLERY_SCHEMA)
+      .from(CONTACT_TABLE)
+      .update({ is_archived: true })
+      .eq("id", m.id);
+    if (error) { showToast(error.message, "error"); return; }
+    showToast("Message removed.", "success");
+    loadMessages();
+  };
 
   useEffect(() => {
     loadMessages();
@@ -384,7 +417,12 @@ function ContactMessagesTable() {
                           {m.message.length > 80 ? m.message.substring(0, 80) + "..." : m.message}
                         </p>
                       </div>
-                      <span className="text-gray-300 text-sm shrink-0 mt-1">{expandedId === m.id ? "▲" : "▼"}</span>
+                      <div className="flex items-center gap-1 shrink-0 mt-1">
+                        <button onClick={(e) => { e.stopPropagation(); handleArchive(m); }} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove">
+                          <Trash2 size={14} />
+                        </button>
+                        <span className="text-gray-300 text-sm">{expandedId === m.id ? "▲" : "▼"}</span>
+                      </div>
                     </div>
                   </div>
                   {expandedId === m.id && (
@@ -411,6 +449,7 @@ function ContactMessagesTable() {
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">Subject</th>
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Message Preview</th>
                     <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-400 uppercase tracking-wider w-40 whitespace-nowrap">Date</th>
+                    <th className="px-3 py-3.5 w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -433,6 +472,11 @@ function ContactMessagesTable() {
                                 {m.message.length > 55 ? m.message.substring(0, 55) + "..." : m.message}
                               </td>
                               <td className="px-5 py-4 text-gray-500 text-xs w-40 whitespace-nowrap">{formatDate(m.created_at)}</td>
+                              <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => handleArchive(m)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove">
+                                  <Trash2 size={14} />
+                                </button>
+                              </td>
                             </tr>
                             {expandedId === m.id && (
                               <tr className="bg-green-50/40">
@@ -465,7 +509,7 @@ function ContactMessagesTable() {
   );
 }
 
-function OfflineDonationsTab() {
+function OfflineDonationsTab({ showToast }: { showToast: (msg: string, type: "success" | "error") => void }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState("");
@@ -484,6 +528,7 @@ function OfflineDonationsTab() {
       .schema(GALLERY_SCHEMA)
       .from(OFFLINE_TABLE)
       .select("*")
+      .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
     if (!error) {
@@ -491,6 +536,17 @@ function OfflineDonationsTab() {
     }
     setLoadingRecords(false);
   }, []);
+
+  const handleArchive = async (r: OfflineDonation) => {
+    const { error } = await supabase
+      .schema(GALLERY_SCHEMA)
+      .from(OFFLINE_TABLE)
+      .update({ is_archived: true })
+      .eq("id", r.id);
+    if (error) { showToast(error.message, "error"); return; }
+    showToast("Record removed.", "success");
+    loadRecords();
+  };
 
   useEffect(() => {
     loadRecords();
@@ -931,6 +987,9 @@ function OfflineDonationsTab() {
                           <><Loader2 size={11} className="animate-spin" /> Sharing…</>
                         ) : <><Share2 size={11} /> Share</>}
                       </button>
+                      <button onClick={() => handleArchive(r)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors self-end" aria-label="Remove">
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -986,6 +1045,9 @@ function OfflineDonationsTab() {
                                 <><Loader2 size={11} className="animate-spin" /> Sharing…</>
                               ) : <><Share2 size={11} /> Share</>}
                             </button>
+                            <button onClick={() => handleArchive(r)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove">
+                              <Trash2 size={14} />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1021,6 +1083,7 @@ function PartnersTab({ showToast }: { showToast: (msg: string, type: "success" |
       .schema(GALLERY_SCHEMA)
       .from(PARTNERS_TABLE)
       .select("*")
+      .eq("is_archived", false)
       .order("created_at", { ascending: true });
     if (!error) setPartners(data || []);
     setLoadingRecords(false);
@@ -1081,21 +1144,18 @@ function PartnersTab({ showToast }: { showToast: (msg: string, type: "success" |
   };
 
   const handleDeletePartner = async (partner: Partner) => {
-    const confirmed = window.confirm(`Delete partner "${partner.name}"? This cannot be undone.`);
+    const confirmed = window.confirm(`Remove "${partner.name}"? This cannot be undone.`);
     if (!confirmed) return;
-    if (partner.photo_path) {
-      await supabase.storage.from(PARTNERS_BUCKET).remove([partner.photo_path]);
-    }
     const { error } = await supabase
       .schema(GALLERY_SCHEMA)
       .from(PARTNERS_TABLE)
-      .delete()
+      .update({ is_archived: true })
       .eq("id", partner.id);
     if (error) {
       showToast(error.message, "error");
       return;
     }
-    showToast("Partner deleted.", "success");
+    showToast("Partner removed.", "success");
     loadPartners();
   };
 
@@ -1250,6 +1310,7 @@ export function AdminGalleryPage() {
       .schema(GALLERY_SCHEMA)
       .from(GALLERY_TABLE)
       .select("*")
+      .eq("is_archived", false)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
 
@@ -1353,31 +1414,21 @@ export function AdminGalleryPage() {
   };
 
   const handleDelete = async (item: GalleryItem) => {
-    const confirmed = window.confirm(`Delete "${item.caption}"? This cannot be undone.`);
+    const confirmed = window.confirm(`Remove "${item.caption}"? This cannot be undone.`);
     if (!confirmed) return;
 
-    const bucket = item.media_type === "video" ? GALLERY_VIDEO_BUCKET : GALLERY_BUCKET;
-    const { error: storageError } = await supabase.storage
-      .from(bucket)
-      .remove([item.file_path]);
-
-    if (storageError) {
-      showToast(storageError.message, "error");
-      return;
-    }
-
-    const { error: dbError } = await supabase
+    const { error } = await supabase
       .schema(GALLERY_SCHEMA)
       .from(GALLERY_TABLE)
-      .delete()
+      .update({ is_archived: true })
       .eq("id", item.id);
 
-    if (dbError) {
-      showToast(dbError.message, "error");
+    if (error) {
+      showToast(error.message, "error");
       return;
     }
 
-    showToast("Image deleted.", "success");
+    showToast("Item removed.", "success");
     loadItems();
   };
 
@@ -1655,11 +1706,11 @@ export function AdminGalleryPage() {
             </div>
           )}
 
-          {activeTab === "donors" && <DonationsTable />}
+          {activeTab === "donors" && <DonationsTable showToast={showToast} />}
 
-          {activeTab === "contact" && <ContactMessagesTable />}
+          {activeTab === "contact" && <ContactMessagesTable showToast={showToast} />}
 
-          {activeTab === "offline" && <OfflineDonationsTab />}
+          {activeTab === "offline" && <OfflineDonationsTab showToast={showToast} />}
 
           {activeTab === "partners" && <PartnersTab showToast={showToast} />}
         </div>
