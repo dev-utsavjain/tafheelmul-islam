@@ -8,7 +8,263 @@
   </head>
   <body>
     <div id="root"></div>
+
     <script type="module" src="/src/main.tsx"></script>
+
+    <script>
+      (function () {
+        if (window.__IMAGINE_BRIDGE__) return;
+        window.__IMAGINE_BRIDGE__ = true;
+
+        let idCounter = 0;
+
+        const allowedTags = [
+          "p",
+          "span",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "button",
+          "a",
+          "img",
+        ];
+
+        function getNodeById(nodeId) {
+          if (typeof nodeId !== "string" || !/^n_\d+$/.test(nodeId))
+            return null;
+          return document.querySelector('[data-node-id="' + nodeId + '"]');
+        }
+
+        function assignNodeIds() {
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_ELEMENT,
+          );
+          let node;
+          while ((node = walker.nextNode())) {
+            const tag = node.tagName?.toLowerCase();
+            if (!allowedTags.includes(tag)) continue;
+            if (!node.hasAttribute("data-node-id")) {
+              node.setAttribute("data-node-id", "n_" + ++idCounter);
+            }
+          }
+        }
+
+        const observer = new MutationObserver(function (mutations) {
+          mutations.forEach(function (m) {
+            m.addedNodes.forEach(function (node) {
+              if (node.nodeType !== 1) return;
+              const tag = node.tagName?.toLowerCase();
+              if (
+                allowedTags.includes(tag) &&
+                !node.hasAttribute("data-node-id")
+              ) {
+                node.setAttribute("data-node-id", "n_" + ++idCounter);
+              }
+              node
+                .querySelectorAll(allowedTags.join(","))
+                .forEach(function (child) {
+                  if (!child.hasAttribute("data-node-id")) {
+                    child.setAttribute("data-node-id", "n_" + ++idCounter);
+                  }
+                });
+            });
+          });
+        });
+
+        function init() {
+          assignNodeIds();
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
+
+        if (document.body) {
+          init();
+        } else {
+          document.addEventListener("DOMContentLoaded", init);
+        }
+
+        function isOverlay(el) {
+          if (el.textContent.trim() !== "") return false;
+          const pos = window.getComputedStyle(el).position;
+          return pos === "absolute" || pos === "fixed";
+        }
+
+        function getClassName(el) {
+          return (
+            (typeof el.className === "string"
+              ? el.className
+              : el.getAttribute("class")) || undefined
+          );
+        }
+
+        // Reads the build-time source location stamped by babel-plugin-imagine-loc
+        // on the nearest ancestor. Returns the file (project-relative, prefixed
+        // with "frontend/" so it can be sent straight to /api/project/patch-files)
+        // plus the 1-based line/column. Null when the project predates the plugin.
+        function getLoc(el) {
+          var holder =
+            el.closest && el.closest("[data-imagine-loc]");
+          if (!holder) return null;
+          var raw = holder.getAttribute("data-imagine-loc");
+          var parts = raw.split(":");
+          var col = parts.length > 2 ? parseInt(parts.pop(), 10) : undefined;
+          var line = parts.length > 1 ? parseInt(parts.pop(), 10) : undefined;
+          var file = parts.join(":");
+          return {
+            loc: raw,
+            file: file ? "frontend/" + file : undefined,
+            line: line,
+            col: col,
+          };
+        }
+
+        document.addEventListener(
+          "click",
+          function (e) {
+            let el = e.target;
+            if (!el || el.nodeType !== 1) return;
+            if (el.closest("#watermark")) return;
+
+            const originalEl = el;
+
+            if (
+              !allowedTags.includes(el.tagName?.toLowerCase()) &&
+              isOverlay(el)
+            ) {
+              const parent = el.parentElement;
+              if (parent) {
+                const siblingImg = Array.from(parent.children).find(
+                  function (c) {
+                    return c.tagName?.toLowerCase() === "img";
+                  },
+                );
+                if (siblingImg) el = siblingImg;
+              }
+            }
+
+            if (!allowedTags.includes(el.tagName?.toLowerCase())) {
+              el = originalEl;
+              while (el && el !== document.body) {
+                if (allowedTags.includes(el.tagName?.toLowerCase())) break;
+                el = el.parentElement;
+              }
+            }
+
+            if (!el || el === document.body) return;
+
+            const tag = el.tagName.toLowerCase();
+
+            if (!el.hasAttribute("data-node-id")) {
+              el.setAttribute("data-node-id", "n_" + ++idCounter);
+            }
+
+            const text = (el.innerText || "").trim();
+            const locInfo = getLoc(el);
+
+            window.parent.postMessage(
+              {
+                type: "NODE_CLICK",
+                nodeId: el.getAttribute("data-node-id"),
+                tag,
+                text,
+                // Source location for code-level patching via /patch-files.
+                file: locInfo ? locInfo.file : undefined,
+                line: locInfo ? locInfo.line : undefined,
+                col: locInfo ? locInfo.col : undefined,
+                loc: locInfo ? locInfo.loc : undefined,
+                src:
+                  tag === "img"
+                    ? el.getAttribute("src") || el.src || ""
+                    : undefined,
+                className: getClassName(el),
+                id: el.id || undefined,
+                href:
+                  tag === "a"
+                    ? el.getAttribute("href") || undefined
+                    : undefined,
+                outerHTML: el.outerHTML || undefined,
+              },
+              "*",
+            );
+          },
+          true,
+        );
+
+        function applyUpdate(el, updates) {
+          if (!el || !updates) return;
+
+          if (typeof updates.text === "string") {
+            if (el.children.length === 0) {
+              el.textContent = updates.text;
+            } else {
+              const textNode = Array.from(el.childNodes).find(function (n) {
+                return n.nodeType === Node.TEXT_NODE && n.textContent.trim();
+              });
+              if (textNode) {
+                textNode.textContent = updates.text;
+              }
+            }
+          }
+
+          if (
+            typeof updates.src === "string" &&
+            el.tagName.toLowerCase() === "img"
+          ) {
+            el.src = updates.src;
+          }
+
+          if (updates.attributes && typeof updates.attributes === "object") {
+            Object.keys(updates.attributes).forEach(function (key) {
+              const val = updates.attributes[key];
+              if (val === null || val === undefined) {
+                el.removeAttribute(key);
+              } else {
+                el.setAttribute(key, String(val));
+              }
+            });
+          }
+
+          if (updates.styles && typeof updates.styles === "object") {
+            Object.keys(updates.styles).forEach(function (key) {
+              el.style[key] = updates.styles[key];
+            });
+          }
+        }
+
+        window.addEventListener("message", function (event) {
+          if (event.source !== window.parent) return;
+
+          const data = event.data;
+
+          if (data?.type === "UPDATE_NODE") {
+            const el = getNodeById(data.nodeId);
+            if (el) applyUpdate(el, data.updates);
+          }
+
+          if (data?.type === "BATCH_UPDATE" && Array.isArray(data.changes)) {
+            data.changes.forEach(function (change) {
+              const el = getNodeById(change.nodeId);
+              if (el) applyUpdate(el, change.updates);
+            });
+          }
+
+          if (data?.type === "HIGHLIGHT_NODE") {
+            const el = getNodeById(data.nodeId);
+            if (el) el.style.outline = "2px solid #4f46e5";
+          }
+
+          if (data?.type === "CLEAR_HIGHLIGHT") {
+            document.querySelectorAll("[data-node-id]").forEach(function (el) {
+              el.style.outline = "";
+            });
+          }
+        });
+      })();
+    </script>
+
   </body>
 </html>
 

@@ -77,8 +77,16 @@ export function Footer() {
         </div>
         
         {/* Bottom Row */}
-        <div className="col-span-1 sm:col-span-2 lg:col-span-4 mt-6 lg:mt-8 pt-6 lg:pt-8 border-t border-gray-200 text-center text-xs md:text-sm text-gray-500">
-          © {new Date().getFullYear()} Tafheem-ul-Islam. All rights reserved.
+        <div className="col-span-1 sm:col-span-2 lg:col-span-4 mt-6 lg:mt-8 pt-6 lg:pt-8 border-t border-gray-200 text-center text-xs md:text-sm text-gray-500 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+          <span>© {new Date().getFullYear()} Tafheem-ul-Islam. All rights reserved.</span>
+          <a
+            href="https://imagine.bo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 hover:text-[#12372a] transition-all opacity-100 hover:opacity-80"
+          >
+            Developed by Imagine.bo
+          </a>
         </div>
       </div>
     </footer>
