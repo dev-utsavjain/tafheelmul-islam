@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Upload,
@@ -183,12 +183,17 @@ function DonationsTable({ showToast }: { showToast: (msg: string, type: "success
   }, []);
 
   const handleArchive = async (d: Donation) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .schema(GALLERY_SCHEMA)
       .from(DONATIONS_TABLE)
       .update({ is_archived: true })
-      .eq("id", d.id);
+      .eq("id", d.id)
+      .select();
     if (error) { showToast(error.message, "error"); return; }
+    if (!data || data.length === 0) {
+      showToast("Could not remove — update affected 0 rows (check table UPDATE permissions).", "error");
+      return;
+    }
     showToast("Record removed.", "success");
     loadDonations();
   };
@@ -342,12 +347,17 @@ function ContactMessagesTable({ showToast }: { showToast: (msg: string, type: "s
   }, []);
 
   const handleArchive = async (m: ContactMessage) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .schema(GALLERY_SCHEMA)
       .from(CONTACT_TABLE)
       .update({ is_archived: true })
-      .eq("id", m.id);
+      .eq("id", m.id)
+      .select();
     if (error) { showToast(error.message, "error"); return; }
+    if (!data || data.length === 0) {
+      showToast("Could not remove — update affected 0 rows (check table UPDATE permissions).", "error");
+      return;
+    }
     showToast("Message removed.", "success");
     loadMessages();
   };
@@ -454,46 +464,40 @@ function ContactMessagesTable({ showToast }: { showToast: (msg: string, type: "s
                 </thead>
                 <tbody>
                   {messages.map((m, i) => (
-                    <tr key={m.id} className="border-b border-gray-50 last:border-b-0">
-                      <td colSpan={6} className="p-0">
-                        <table className="w-full text-sm table-fixed">
-                          <tbody>
-                            <tr
-                              onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
-                              className={`hover:bg-gray-50 transition-colors cursor-pointer ${
-                                expandedId === m.id ? "bg-green-50/20" : ""
-                              }`}
-                            >
-                              <td className="px-5 py-4 text-gray-400 font-medium w-12">{i + 1}</td>
-                              <td className="px-5 py-4 font-semibold text-gray-800 w-36 truncate">{m.name}</td>
-                              <td className="px-5 py-4 text-gray-600 font-mono text-xs w-48 truncate">{m.email}</td>
-                              <td className="px-5 py-4 text-gray-800 font-medium w-44 truncate">{m.subject}</td>
-                              <td className="px-5 py-4 text-gray-500 truncate">
-                                {m.message.length > 55 ? m.message.substring(0, 55) + "..." : m.message}
-                              </td>
-                              <td className="px-5 py-4 text-gray-500 text-xs w-40 whitespace-nowrap">{formatDate(m.created_at)}</td>
-                              <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
-                                <button onClick={() => handleArchive(m)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove">
-                                  <Trash2 size={14} />
-                                </button>
-                              </td>
-                            </tr>
-                            {expandedId === m.id && (
-                              <tr className="bg-green-50/40">
-                                <td colSpan={6} className="px-10 py-6 border-t border-green-50">
-                                  <div className="flex flex-col gap-2 w-full">
-                                    <span className="text-xs font-bold text-[#12372a] uppercase tracking-wider">Full Message</span>
-                                    <div className="bg-white border border-green-100 rounded-xl p-5 shadow-sm text-gray-800 text-base leading-relaxed whitespace-pre-wrap font-medium w-full">
-                                      {m.message}
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
+                    <Fragment key={m.id}>
+                      <tr
+                        onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}
+                        className={`border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
+                          expandedId === m.id ? "bg-green-50/20" : ""
+                        }`}
+                      >
+                        <td className="px-5 py-4 text-gray-400 font-medium w-12">{i + 1}</td>
+                        <td className="px-5 py-4 font-semibold text-gray-800 w-36 truncate">{m.name}</td>
+                        <td className="px-5 py-4 text-gray-600 font-mono text-xs w-48 truncate">{m.email}</td>
+                        <td className="px-5 py-4 text-gray-800 font-medium w-44 truncate">{m.subject}</td>
+                        <td className="px-5 py-4 text-gray-500 truncate">
+                          {m.message.length > 55 ? m.message.substring(0, 55) + "..." : m.message}
+                        </td>
+                        <td className="px-5 py-4 text-gray-500 text-xs w-40 whitespace-nowrap">{formatDate(m.created_at)}</td>
+                        <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => handleArchive(m)} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove">
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedId === m.id && (
+                        <tr className="bg-green-50/40">
+                          <td colSpan={7} className="px-10 py-6 border-t border-green-50">
+                            <div className="flex flex-col gap-2 w-full">
+                              <span className="text-xs font-bold text-[#12372a] uppercase tracking-wider">Full Message</span>
+                              <div className="bg-white border border-green-100 rounded-xl p-5 shadow-sm text-gray-800 text-base leading-relaxed whitespace-pre-wrap font-medium w-full">
+                                {m.message}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>
