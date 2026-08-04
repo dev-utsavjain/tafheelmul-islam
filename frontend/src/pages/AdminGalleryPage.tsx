@@ -17,6 +17,7 @@ import {
   Wallet,
   Share2,
   Video,
+  FileText,
   Users2,
 } from "lucide-react";
 import {
@@ -37,6 +38,7 @@ import {
   PARTNERS_BUCKET,
   getGalleryImageUrl,
   getGalleryVideoUrl,
+  getGalleryPdfUrl,
   getPartnerPhotoUrl,
 } from "../lib/supabase";
 
@@ -119,7 +121,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             <Lock size={24} className="text-[#12372a]" />
           </div>
           <h1 className="font-display text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="text-sm text-gray-500 text-center">Gallery Management — Tafheem-ul-Islam Trust</p>
+          <p className="text-sm text-gray-500 text-center">Admin Panel — Tafheem-ul-Islam Trust</p>
         </div>
 
         <form onSubmit={submit} className="flex flex-col gap-4">
@@ -175,7 +177,9 @@ function DonationsTable({ showToast }: { showToast: (msg: string, type: "success
       .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
-    if (!error) {
+    if (error) {
+      showToast(error.message, "error");
+    } else {
       setDonations(data || []);
     }
 
@@ -340,7 +344,9 @@ function ContactMessagesTable({ showToast }: { showToast: (msg: string, type: "s
       .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
-    if (!error) {
+    if (error) {
+      showToast(error.message, "error");
+    } else {
       setMessages(data || []);
     }
     setLoading(false);
@@ -535,19 +541,26 @@ function OfflineDonationsTab({ showToast }: { showToast: (msg: string, type: "su
       .eq("is_archived", false)
       .order("created_at", { ascending: false });
 
-    if (!error) {
+    if (error) {
+      showToast(error.message, "error");
+    } else {
       setRecords(data || []);
     }
     setLoadingRecords(false);
   }, []);
 
   const handleArchive = async (r: OfflineDonation) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .schema(GALLERY_SCHEMA)
       .from(OFFLINE_TABLE)
       .update({ is_archived: true })
-      .eq("id", r.id);
+      .eq("id", r.id)
+      .select();
     if (error) { showToast(error.message, "error"); return; }
+    if (!data || data.length === 0) {
+      showToast("Could not remove — update affected 0 rows (check table UPDATE permissions).", "error");
+      return;
+    }
     showToast("Record removed.", "success");
     loadRecords();
   };
@@ -584,7 +597,7 @@ function OfflineDonationsTab({ showToast }: { showToast: (msg: string, type: "su
       setAddress("");
       loadRecords();
     } catch (err: any) {
-      alert(err.message || "Failed to add manual entry.");
+      showToast(err.message || "Failed to add manual entry.", "error");
     } finally {
       setLoading(false);
     }
@@ -760,7 +773,7 @@ function OfflineDonationsTab({ showToast }: { showToast: (msg: string, type: "su
 
     } catch (err) {
       console.error("Receipt generation failed:", err);
-      alert("Could not generate the receipt. Please try again.");
+      showToast("Could not generate the receipt. Please try again.", "error");
     } finally {
       document.getElementById("__rp_container__")?.remove();
       setReceiptLoading(null);
@@ -821,7 +834,7 @@ function OfflineDonationsTab({ showToast }: { showToast: (msg: string, type: "su
       }
     } catch (err) {
       console.error("Share receipt failed:", err);
-      alert("Could not share the receipt. Please try again.");
+      showToast("Could not share the receipt. Please try again.", "error");
     } finally {
       document.getElementById("__rp_container__")?.remove();
       setShareLoading(null);
@@ -1089,7 +1102,11 @@ function PartnersTab({ showToast }: { showToast: (msg: string, type: "success" |
       .select("*")
       .eq("is_archived", false)
       .order("created_at", { ascending: true });
-    if (!error) setPartners(data || []);
+    if (error) {
+      showToast(error.message, "error");
+    } else {
+      setPartners(data || []);
+    }
     setLoadingRecords(false);
   }, []);
 
@@ -1150,13 +1167,24 @@ function PartnersTab({ showToast }: { showToast: (msg: string, type: "success" |
   const handleDeletePartner = async (partner: Partner) => {
     const confirmed = window.confirm(`Remove "${partner.name}"? This cannot be undone.`);
     if (!confirmed) return;
-    const { error } = await supabase
+    const { data, error } = await supabase
       .schema(GALLERY_SCHEMA)
       .from(PARTNERS_TABLE)
       .update({ is_archived: true })
-      .eq("id", partner.id);
+      .eq("id", partner.id)
+      .select();
     if (error) {
       showToast(error.message, "error");
+      return;
+    }
+    if (!data || data.length === 0) {
+      showToast("Could not remove — update affected 0 rows (check table UPDATE permissions).", "error");
+      return;
+    }
+    const { error: storageError } = await supabase.storage.from(PARTNERS_BUCKET).remove([partner.photo_path]);
+    if (storageError) {
+      showToast(`Partner removed, but photo cleanup failed: ${storageError.message}`, "error");
+      loadPartners();
       return;
     }
     showToast("Partner removed.", "success");
@@ -1286,25 +1314,34 @@ export function AdminGalleryPage() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [toast, setToast] = useState<{ id: number; message: string; type: "success" | "error" } | null>(null);
 
   const [activeTab, setActiveTab] = useState<"gallery" | "donors" | "contact" | "offline" | "partners">("gallery");
 
   const [caption, setCaption] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
-  const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [mediaType, setMediaType] = useState<"image" | "video" | "pdf">("image");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const showToast = (message: string, type: "success" | "error") =>
-    setToast({ message, type });
+    setToast({ id: Date.now(), message, type });
+
+  // PDFs share the images bucket; only videos get their own.
+  const bucketFor = (t: "image" | "video" | "pdf") =>
+    t === "video" ? GALLERY_VIDEO_BUCKET : GALLERY_BUCKET;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setAuthed(!!data.session);
       setSessionChecked(true);
     });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthed(!!session);
+      setSessionChecked(true);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   const loadItems = useCallback(async () => {
@@ -1335,17 +1372,22 @@ export function AdminGalleryPage() {
   const handleFile = (f: File) => {
     const isVideo = f.type.startsWith("video/");
     const isImage = f.type.startsWith("image/");
-    if (!isImage && !isVideo) {
-      showToast("Only image or video files are allowed.", "error");
+    const isPdf = f.type === "application/pdf";
+    if (!isImage && !isVideo && !isPdf) {
+      showToast("Only image, video, or PDF files are allowed.", "error");
       return;
     }
 
-    setMediaType(isVideo ? "video" : "image");
+    setMediaType(isVideo ? "video" : isPdf ? "pdf" : "image");
     setFile(f);
 
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview((e.target?.result as string) || null);
-    reader.readAsDataURL(f);
+    if (isPdf) {
+      setPreview(null);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview((e.target?.result as string) || null);
+      reader.readAsDataURL(f);
+    }
 
     if (!caption) {
       setCaption(f.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " "));
@@ -1370,7 +1412,7 @@ export function AdminGalleryPage() {
     setUploading(true);
 
     const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-    const bucket = mediaType === "video" ? GALLERY_VIDEO_BUCKET : GALLERY_BUCKET;
+    const bucket = bucketFor(mediaType);
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
@@ -1413,7 +1455,7 @@ export function AdminGalleryPage() {
     setCaption("");
     setCategory(CATEGORIES[0]);
     setMediaType("image");
-    showToast(`${mediaType === "video" ? "Video" : "Image"} uploaded successfully!`, "success");
+    showToast(`${mediaType === "video" ? "Video" : mediaType === "pdf" ? "PDF" : "Image"} uploaded successfully!`, "success");
     loadItems();
   };
 
@@ -1429,6 +1471,14 @@ export function AdminGalleryPage() {
 
     if (error) {
       showToast(error.message, "error");
+      return;
+    }
+
+    const bucket = item.media_type === "video" ? GALLERY_VIDEO_BUCKET : GALLERY_BUCKET;
+    const { error: storageError } = await supabase.storage.from(bucket).remove([item.file_path]);
+    if (storageError) {
+      showToast(`Item removed, but file cleanup failed: ${storageError.message}`, "error");
+      loadItems();
       return;
     }
 
@@ -1458,7 +1508,7 @@ export function AdminGalleryPage() {
               <ImageIcon size={18} className="text-[#12372a]" />
             </div>
             <div>
-              <h1 className="font-display font-bold text-gray-900 text-base leading-tight">Gallery Admin</h1>
+              <h1 className="font-display font-bold text-gray-900 text-base leading-tight">Admin Panel</h1>
               <p className="text-xs text-gray-400">Tafheem-ul-Islam Trust</p>
             </div>
           </div>
@@ -1524,6 +1574,7 @@ export function AdminGalleryPage() {
                     <p className="text-sm text-gray-400 mt-1">
                       Images → <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">gallery-images</code>
                       {" "}· Videos → <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">gallery-videos</code>
+                      {" "}· PDFs → <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">gallery-images</code>
                     </p>
                   </div>
 
@@ -1545,7 +1596,7 @@ export function AdminGalleryPage() {
                       <input
                         id="gallery-file-input"
                         type="file"
-                        accept="image/*,video/*"
+                        accept="image/*,video/*,application/pdf"
                         className="hidden"
                         onChange={(e) => {
                           const f = e.target.files?.[0];
@@ -1553,12 +1604,17 @@ export function AdminGalleryPage() {
                         }}
                       />
 
-                      {preview ? (
+                      {file ? (
                         <>
-                          {mediaType === "video" ? (
-                            <video src={preview} controls className="w-full rounded-xl max-h-48" />
+                          {mediaType === "pdf" ? (
+                            <div className="w-full rounded-xl bg-gray-50 border border-gray-200 flex flex-col items-center justify-center gap-2 py-10">
+                              <FileText size={36} className="text-[#12372a]" />
+                              <p className="text-xs text-gray-500 font-medium">PDF selected</p>
+                            </div>
+                          ) : mediaType === "video" ? (
+                            <video src={preview ?? undefined} controls className="w-full rounded-xl max-h-48" />
                           ) : (
-                            <img src={preview} alt="Preview" className="w-full rounded-xl object-cover max-h-48" />
+                            <img src={preview ?? undefined} alt="Preview" className="w-full rounded-xl object-cover max-h-48" />
                           )}
                           <p className="text-xs text-gray-400 pb-2">{file?.name}</p>
                           <button
@@ -1580,8 +1636,8 @@ export function AdminGalleryPage() {
                             <Upload size={22} className="text-[#12372a]" />
                           </div>
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-gray-700">Drop image or video here or click to browse</p>
-                            <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · MP4, MOV, WEBM</p>
+                            <p className="text-sm font-semibold text-gray-700">Drop image, video or PDF here or click to browse</p>
+                            <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · MP4, MOV, WEBM · PDF</p>
                           </div>
                         </>
                       )}
@@ -1624,7 +1680,7 @@ export function AdminGalleryPage() {
                         </>
                       ) : (
                         <>
-                          <Upload size={16} /> Upload {mediaType === "video" ? "Video" : "Image"}
+                          <Upload size={16} /> Upload {mediaType === "video" ? "Video" : mediaType === "pdf" ? "PDF" : "Image"}
                         </>
                       )}
                     </button>
@@ -1677,7 +1733,20 @@ export function AdminGalleryPage() {
                               <video
                                 src={getGalleryVideoUrl(item.file_path)}
                                 className="w-16 h-16 rounded-xl object-cover shrink-0 bg-gray-100"
+                                muted
+                                playsInline
+                                preload="metadata"
                               />
+                            ) : item.media_type === "pdf" ? (
+                              <a
+                                href={getGalleryPdfUrl(item.file_path)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-16 h-16 rounded-xl shrink-0 bg-[#e8fccd] flex items-center justify-center"
+                                aria-label={`Open PDF: ${item.caption}`}
+                              >
+                                <FileText size={24} className="text-[#12372a]" />
+                              </a>
                             ) : (
                               <img
                                 src={getGalleryImageUrl(item.file_path)}
@@ -1723,7 +1792,7 @@ export function AdminGalleryPage() {
       <AnimatePresence>
         {toast && (
           <Toast
-            key={toast.message}
+            key={toast.id}
             message={toast.message}
             type={toast.type}
             onDismiss={() => setToast(null)}

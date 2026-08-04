@@ -1,12 +1,13 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ZoomIn, ChevronLeft, ChevronRight, Camera, Video } from "lucide-react";
+import { X, ZoomIn, ChevronLeft, ChevronRight, Camera, Video, FileText } from "lucide-react";
 import {
   supabase,
   type GalleryItem,
   getGalleryImageUrl,
   getGalleryVideoUrl,
+  getGalleryPdfUrl,
   GALLERY_SCHEMA,
   GALLERY_TABLE,
 } from "../lib/supabase";
@@ -22,7 +23,7 @@ const cardVariants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: "spring", stiffness: 260, damping: 22 },
+    transition: { type: "spring" as const, stiffness: 260, damping: 22 },
   },
   exit: { opacity: 0, scale: 0.9, transition: { duration: 0.15 } },
 };
@@ -32,7 +33,7 @@ const lightboxVariants = {
   show: {
     opacity: 1,
     scale: 1,
-    transition: { type: "spring", stiffness: 300, damping: 26 },
+    transition: { type: "spring" as const, stiffness: 300, damping: 26 },
   },
   exit: { opacity: 0, scale: 0.92, transition: { duration: 0.18 } },
 };
@@ -152,7 +153,7 @@ function Lightbox({
 export function GalleryPage() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeMediaType, setActiveMediaType] = useState<'photos' | 'videos'>('photos');
+  const [activeMediaType, setActiveMediaType] = useState<'photos' | 'videos' | 'documents'>('photos');
   const [activeCategory, setActiveCategory] = useState("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -181,7 +182,7 @@ export function GalleryPage() {
 
   const mediaFiltered = useMemo(
     () => items.filter((i) =>
-      activeMediaType === 'photos' ? i.media_type !== 'video' : i.media_type === 'video'
+      activeMediaType === 'photos' ? i.media_type === 'image' : activeMediaType === 'videos' ? i.media_type === 'video' : i.media_type === 'pdf'
     ),
     [items, activeMediaType]
   );
@@ -259,7 +260,7 @@ export function GalleryPage() {
           <section className="flex flex-col gap-4">
             <div className="flex items-center gap-4 flex-wrap">
               <div className="inline-flex bg-gray-100 p-1 rounded-full">
-                {(['photos', 'videos'] as const).map((type) => (
+                {(['photos', 'videos', 'documents'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => {
@@ -312,7 +313,9 @@ export function GalleryPage() {
               Showing <span className="font-semibold text-gray-700">{filtered.length}</span>{" "}
               {activeMediaType === 'photos'
                 ? filtered.length === 1 ? "photo" : "photos"
-                : filtered.length === 1 ? "video" : "videos"}
+                : activeMediaType === 'videos'
+                  ? filtered.length === 1 ? "video" : "videos"
+                  : filtered.length === 1 ? "document" : "documents"}
               {activeCategory !== "All" && (
                 <>
                   {" "}in <span className="font-semibold text-[#12372a]">{activeCategory}</span>
@@ -351,11 +354,11 @@ export function GalleryPage() {
                     variants={cardVariants}
                     layout
                     className="group relative bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
-                    onClick={() => openLightbox(index)}
+                    onClick={() => item.media_type === 'pdf' ? window.open(getGalleryPdfUrl(item.file_path), "_blank", "noopener") : openLightbox(index)}
                     role="button"
                     tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && openLightbox(index)}
-                    aria-label={`View: ${item.caption}`}
+                    onKeyDown={(e) => e.key === "Enter" && (item.media_type === 'pdf' ? window.open(getGalleryPdfUrl(item.file_path), "_blank", "noopener") : openLightbox(index))}
+                    aria-label={item.media_type === 'pdf' ? `Open PDF: ${item.caption}` : `View: ${item.caption}`}
                   >
                     <div className="aspect-square overflow-hidden bg-gray-100">
                       {item.media_type === 'video' ? (
@@ -366,6 +369,11 @@ export function GalleryPage() {
                           playsInline
                           preload="metadata"
                         />
+                      ) : item.media_type === 'pdf' ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-[#e8fccd]/50 transition-transform duration-500 group-hover:scale-105">
+                          <FileText size={48} className="text-[#12372a]" />
+                          <span className="text-xs font-semibold text-[#12372a] uppercase tracking-wider">PDF Document</span>
+                        </div>
                       ) : (
                         <motion.img
                           src={getGalleryImageUrl(item.file_path)}
@@ -406,6 +414,8 @@ export function GalleryPage() {
             >
               {activeMediaType === 'videos' ? (
                 <Video size={48} className="mb-4 opacity-25" />
+              ) : activeMediaType === 'documents' ? (
+                <FileText size={48} className="mb-4 opacity-25" />
               ) : (
                 <Camera size={48} className="mb-4 opacity-25" />
               )}

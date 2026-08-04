@@ -23,7 +23,7 @@ export type GalleryItem = {
     category: string;
     sort_order: number;
     created_at: string;
-    media_type: 'image' | 'video';
+    media_type: 'image' | 'video' | 'pdf';
 };
 
 export type Donation = {
@@ -73,6 +73,12 @@ export function getGalleryImageUrl(filePath: string) {
 
 export function getGalleryVideoUrl(filePath: string) {
     const { data } = supabase.storage.from(GALLERY_VIDEO_BUCKET).getPublicUrl(filePath);
+    return data.publicUrl;
+}
+
+// PDFs live in the same gallery-images bucket as images.
+export function getGalleryPdfUrl(filePath: string) {
+    const { data } = supabase.storage.from(GALLERY_BUCKET).getPublicUrl(filePath);
     return data.publicUrl;
 }
 
